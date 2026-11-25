@@ -8,8 +8,14 @@ public class Token {
     private String department;
     private String symptoms;
     private String priority;          // "NORMAL", "URGENT", "EMERGENCY"
-    private String status;            // "WAITING", "IN_CONSULTATION", "COMPLETED", "CANCELLED"
+    private String status;            // "AWAITING_ARRIVAL", "WAITING", "IN_CONSULTATION", "COMPLETED", "EXPIRED", "CANCELLED"
+    private String bookingType;       // "WALK_IN" or "SCHEDULED"
+    private String runningSlot;       // e.g. "10:00 AM - 10:15 AM"
+    private String appointmentId;     // linked appointment id if scheduled
     private String createdAt;
+    private String confirmedAt;       // timestamp when admin/receptionist confirmed arrival
+    private String confirmedBy;       // staff member who confirmed arrival
+    private String expiresAt;         // auto-expires after 30 mins
     private String calledAt;
     private String completedAt;
     private String assignedDoctor;
@@ -28,6 +34,7 @@ public class Token {
         this.priority = priority;
         this.status = status;
         this.createdAt = createdAt;
+        this.bookingType = "WALK_IN";
     }
 
     public String getId() { return id; }
@@ -54,8 +61,26 @@ public class Token {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
+    public String getBookingType() { return bookingType; }
+    public void setBookingType(String bookingType) { this.bookingType = bookingType; }
+
+    public String getRunningSlot() { return runningSlot; }
+    public void setRunningSlot(String runningSlot) { this.runningSlot = runningSlot; }
+
+    public String getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(String appointmentId) { this.appointmentId = appointmentId; }
+
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getConfirmedAt() { return confirmedAt; }
+    public void setConfirmedAt(String confirmedAt) { this.confirmedAt = confirmedAt; }
+
+    public String getConfirmedBy() { return confirmedBy; }
+    public void setConfirmedBy(String confirmedBy) { this.confirmedBy = confirmedBy; }
+
+    public String getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(String expiresAt) { this.expiresAt = expiresAt; }
 
     public String getCalledAt() { return calledAt; }
     public void setCalledAt(String calledAt) { this.calledAt = calledAt; }

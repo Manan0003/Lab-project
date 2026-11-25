@@ -22,6 +22,8 @@ public class AuthHandler implements HttpHandler {
 
         if ("/api/auth/login".equals(path) && "POST".equalsIgnoreCase(method)) {
             handleLogin(exchange);
+        } else if ("/api/auth/register".equals(path) && "POST".equalsIgnoreCase(method)) {
+            handleRegister(exchange);
         } else if ("/api/auth/me".equals(path) && "GET".equalsIgnoreCase(method)) {
             handleMe(exchange);
         } else if ("/api/auth/logout".equals(path) && "POST".equalsIgnoreCase(method)) {
@@ -38,7 +40,7 @@ public class AuthHandler implements HttpHandler {
 
         User user = authService.authenticate(username, password);
         if (user == null) {
-            HttpUtil.sendError(exchange, 401, "Invalid username or password");
+            HttpUtil.sendError(exchange, 401, "Invalid username/ID or password");
             return;
         }
 
@@ -48,6 +50,36 @@ public class AuthHandler implements HttpHandler {
         resp.put("user", user);
 
         HttpUtil.sendSuccess(exchange, "Login successful", resp);
+    }
+
+    private void handleRegister(HttpExchange exchange) throws IOException {
+        Map<String, Object> body = HttpUtil.readJsonBody(exchange);
+        String username = (String) body.get("username");
+        String password = (String) body.get("password");
+        String fullName = (String) body.get("fullName");
+        String role = (String) body.get("role");
+        String email = (String) body.get("email");
+        String phone = (String) body.get("phone");
+        String department = (String) body.get("department");
+        String year = (String) body.get("year");
+        String bloodGroup = (String) body.get("bloodGroup");
+        String allergies = (String) body.get("allergies");
+        String chronic = (String) body.get("chronicConditions");
+
+        try {
+            User user = authService.registerUser(username, password, fullName, role, email, phone,
+                    department, year, bloodGroup, allergies, chronic);
+            String sessionToken = authService.createSession(user);
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("token", sessionToken);
+            resp.put("user", user);
+
+            HttpUtil.sendSuccess(exchange, "Account created successfully for " + user.getFullName(), resp);
+        } catch (IllegalArgumentException e) {
+            HttpUtil.sendError(exchange, 400, e.getMessage());
+        } catch (Exception e) {
+            HttpUtil.sendError(exchange, 500, "Registration failed: " + e.getMessage());
+        }
     }
 
     private void handleMe(HttpExchange exchange) throws IOException {

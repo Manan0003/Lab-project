@@ -104,12 +104,12 @@
       </div>
     </a>
     <div class="nav-links">
-      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
-      <a href="/doctor.html" class="nav-link">🩺 Doctor Chamber</a>
-      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
-      <a href="/receptionist.html" class="nav-link">📋 Reception</a>
-      <a href="/admin.html" class="nav-link">🛡️ Admin</a>
-      <button class="btn btn-sm btn-secondary" onclick="openLoginModal()">Login</button>
+      <a href="/login.html?portal=student" class="nav-link">🎓 Student Portal</a>
+      <a href="/login.html?portal=doctor" class="nav-link">🩺 Doctor Chamber</a>
+      <a href="/login.html?portal=pharmacy" class="nav-link">💊 Inventory</a>
+      <a href="/login.html?portal=receptionist" class="nav-link">📋 Reception</a>
+      <a href="/login.html?portal=admin" class="nav-link">🛡️ Admin</a>
+      <a href="/login.html" class="btn btn-sm btn-primary">🔑 Sign In / Register</a>
     </div>
   </header>
 
@@ -132,15 +132,16 @@
 
     <!-- HERO SECTION -->
     <div class="hero-banner">
-      <div style="max-width: 700px;">
+      <div style="max-width: 720px;">
         <span class="badge" style="background:rgba(255,255,255,0.2); color:white; margin-bottom:0.75rem;">TIET Patiala · Health Care Unit</span>
         <h2 style="font-size:2.2rem; font-weight:800; line-height:1.2; margin-bottom:0.75rem;">Centralised University Healthcare & Dispensary Platform</h2>
         <p style="font-size:0.95rem; opacity:0.9; line-height:1.5; margin-bottom:1.5rem;">
-          Eliminating paper registers through end-to-end automation: student token booking, live doctor PC consultation, electronic prescriptions, and real-time medicine inventory stock deduction.
+          Eliminating paper registers through end-to-end automation: role-based logins, student token booking by preferred time or best available slot, live doctor PC consultation, and real-time medicine inventory stock deduction.
         </p>
-        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-          <a href="/student.html" class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;">🎓 Book Appointment / Token</a>
-          <a href="/doctor.html" class="btn" style="background:white; color:#8b0000; font-weight:700;">🩺 Open Doctor Consultation PC</a>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <a href="/login.html?portal=student" class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;">🎓 Student Portal Sign In</a>
+          <a href="/login.html?portal=doctor" class="btn" style="background:white; color:#8b0000; font-weight:700;">🩺 Doctor PC Consultation</a>
+          <a href="/login.html?mode=register" class="btn" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); font-weight:700;">✨ Create New ID & Password</a>
         </div>
       </div>
     </div>
@@ -177,57 +178,87 @@
       </div>
     </div>
 
-    <!-- 5 ROLE PORTALS (ONE-CLICK LAUNCH) -->
+    <!-- 5 ROLE PORTALS -->
     <div class="page-title">
-      <h2>Role-Based Portals</h2>
-      <p>Select your authorized role to enter the dispensary system or use 1-click demo access</p>
+      <h2>Role-Based Login Portals</h2>
+      <p>Select your authorized role to sign in to your dashboard or create a new ID & password</p>
     </div>
 
     <div class="portal-cards">
 
       <!-- 1. STUDENT PORTAL -->
-      <div class="portal-card" onclick="quickLogin('102103456', 'student123', '/student.html')">
+      <div class="portal-card">
         <span class="portal-badge">Student / Staff</span>
         <div class="portal-icon">🎓</div>
         <h3>Student Portal</h3>
-        <p>Book doctor appointments, generate queue tokens, track wait time, download digital prescriptions & sick leave certificates.</p>
-        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Student (Aarav Patel)</button>
+        <p>Book doctor appointments with preferred slots, get best available walk-in slot, track wait time, download digital prescriptions.</p>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+          <a href="/login.html?portal=student" class="btn btn-primary btn-sm" style="width:100%; text-align:center;">🔑 Sign In as Student</a>
+          <div style="display:flex; gap:0.4rem;">
+            <a href="/login.html?portal=student&mode=register" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; font-size:0.75rem;">✨ Create ID</a>
+            <button class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;" onclick="quickLogin('102103456', 'student123', '/student.html')">⚡ Demo (Aarav)</button>
+          </div>
+        </div>
       </div>
 
       <!-- 2. DOCTOR PORTAL -->
-      <div class="portal-card" onclick="quickLogin('doctor', 'doctor123', '/doctor.html')">
+      <div class="portal-card">
         <span class="portal-badge">Medical Officer</span>
         <div class="portal-icon">🩺</div>
         <h3>Doctor Chamber PC</h3>
-        <p>Receive student details on PC, view drug allergy alerts, record diagnosis & vitals, and issue digital prescriptions directly to Pharmacy.</p>
-        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Dr. Ananya Sharma</button>
+        <p>Receive student details on PC, view drug allergy alerts, record diagnosis & vitals, issue digital prescriptions directly to Pharmacy.</p>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+          <a href="/login.html?portal=doctor" class="btn btn-primary btn-sm" style="width:100%; text-align:center;">🩺 Sign In as Doctor</a>
+          <div style="display:flex; gap:0.4rem;">
+            <a href="/login.html?portal=doctor&mode=register" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; font-size:0.75rem;">✨ Create ID</a>
+            <button class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;" onclick="quickLogin('doctor', 'doctor123', '/doctor.html')">⚡ Demo (Dr. Ananya)</button>
+          </div>
+        </div>
       </div>
 
       <!-- 3. INVENTORY & PHARMACY -->
-      <div class="portal-card" onclick="quickLogin('pharma', 'pharma123', '/inventory.html')">
+      <div class="portal-card">
         <span class="portal-badge">Pharmacy Desk</span>
         <div class="portal-icon">💊</div>
         <h3>Medicine Inventory</h3>
         <p>Live stock tracking, low-stock & expiry monitoring, inward restock, and 1-click dispensing with auto-deduction (e.g. 200 - 12 = 188).</p>
-        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Pharmacist (Rakesh)</button>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+          <a href="/login.html?portal=pharmacy" class="btn btn-primary btn-sm" style="width:100%; text-align:center;">💊 Sign In as Pharmacist</a>
+          <div style="display:flex; gap:0.4rem;">
+            <a href="/login.html?portal=pharmacy&mode=register" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; font-size:0.75rem;">✨ Create ID</a>
+            <button class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;" onclick="quickLogin('pharma', 'pharma123', '/inventory.html')">⚡ Demo (Rakesh)</button>
+          </div>
+        </div>
       </div>
 
       <!-- 4. RECEPTIONIST -->
-      <div class="portal-card" onclick="quickLogin('reception', 'reception123', '/receptionist.html')">
+      <div class="portal-card">
         <span class="portal-badge">Front Desk</span>
         <div class="portal-icon">📋</div>
         <h3>Reception Desk</h3>
-        <p>Fast patient registration with roll number & emergency contact, walk-in token issuance, doctor schedule management.</p>
-        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Receptionist (Gurpreet)</button>
+        <p>3 Core Columns: Today's Schedule, Approval on Arrival (check-in), and Completed Consultations, plus master patient directory.</p>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+          <a href="/login.html?portal=receptionist" class="btn btn-primary btn-sm" style="width:100%; text-align:center;">📋 Sign In as Receptionist</a>
+          <div style="display:flex; gap:0.4rem;">
+            <a href="/login.html?portal=receptionist&mode=register" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; font-size:0.75rem;">✨ Create ID</a>
+            <button class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;" onclick="quickLogin('reception', 'reception123', '/receptionist.html')">⚡ Demo (Gurpreet)</button>
+          </div>
+        </div>
       </div>
 
       <!-- 5. ADMIN -->
-      <div class="portal-card" onclick="quickLogin('admin', 'admin123', '/admin.html')">
+      <div class="portal-card">
         <span class="portal-badge">Superintendent</span>
         <div class="portal-icon">🛡️</div>
         <h3>Admin & Analytics</h3>
         <p>Executive KPIs, disease/symptom distribution trends, user account administration, and complete audit activity logging.</p>
-        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Chief Administrator</button>
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+          <a href="/login.html?portal=admin" class="btn btn-primary btn-sm" style="width:100%; text-align:center;">🛡️ Sign In as Admin</a>
+          <div style="display:flex; gap:0.4rem;">
+            <a href="/login.html?portal=admin&mode=register" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; font-size:0.75rem;">✨ Create ID</a>
+            <button class="btn btn-outline btn-sm" style="flex:1; font-size:0.75rem;" onclick="quickLogin('admin', 'admin123', '/admin.html')">⚡ Demo (Admin)</button>
+          </div>
+        </div>
       </div>
 
     </div>

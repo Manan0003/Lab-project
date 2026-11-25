@@ -3,6 +3,7 @@ package com.college.dispensary.model;
 public class Appointment {
     private String id;              // e.g. "APT-1001"
     private int tokenNumber;        // e.g. 101
+    private String tokenId;         // linked token ID
     private String patientRollNo;   // Student roll number or staff ID
     private String patientName;
     private String department;
@@ -12,8 +13,11 @@ public class Appointment {
     private String timeSlot;        // e.g. "10:00 AM - 10:30 AM"
     private String symptoms;
     private String priority;        // "NORMAL", "URGENT", "EMERGENCY"
-    private String status;          // "Pending", "Confirmed", "Completed", "Cancelled"
+    private String status;          // "Pending", "Confirmed", "Completed", "Cancelled", "Expired"
     private String createdAt;
+    private String expiresAt;       // Slot start time + 30 mins
+    private String confirmedAt;
+    private String confirmedBy;
     private String notes;
 
     public Appointment() {}
@@ -42,6 +46,9 @@ public class Appointment {
 
     public int getTokenNumber() { return tokenNumber; }
     public void setTokenNumber(int tokenNumber) { this.tokenNumber = tokenNumber; }
+
+    public String getTokenId() { return tokenId; }
+    public void setTokenId(String tokenId) { this.tokenId = tokenId; }
 
     public String getPatientRollNo() { return patientRollNo; }
     public void setPatientRollNo(String patientRollNo) { this.patientRollNo = patientRollNo; }
@@ -75,6 +82,15 @@ public class Appointment {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(String expiresAt) { this.expiresAt = expiresAt; }
+
+    public String getConfirmedAt() { return confirmedAt; }
+    public void setConfirmedAt(String confirmedAt) { this.confirmedAt = confirmedAt; }
+
+    public String getConfirmedBy() { return confirmedBy; }
+    public void setConfirmedBy(String confirmedBy) { this.confirmedBy = confirmedBy; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

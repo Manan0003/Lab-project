@@ -120,20 +120,34 @@ public class DataStore {
         Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
     }
 
-    private void loadOrSeedData() {
-        File studentsFile = new File(AppConfig.DATA_DIR, "students.json");
-        if (studentsFile.exists() && studentsFile.length() > 10) {
+    public synchronized void resetToFactoryDefaults() {
+        tokenCounter.set(100);
+        appointmentCounter.set(1000);
+        prescriptionCounter.set(1000);
+        dispenseCounter.set(5000);
+
+        seedInitialData();
+        saveToDisk();
+        System.out.println("[RESET] Thapar Dispensary DataStore has been completely reset to initial starting state.");
+    }
+
+    public void loadOrSeedData() {
+        File tokensFile = new File(AppConfig.DATA_DIR, "tokens.json");
+        // Check if existing data has at least 10 tokens; if not, re-seed full data
+        if (tokensFile.exists() && tokensFile.length() > 50) {
             try {
                 loadFromDisk();
-                System.out.println("Thapar Dispensary DataStore loaded from disk.");
-                return;
+                if (tokens.size() >= 10) {
+                    System.out.println("Thapar Dispensary DataStore loaded from disk (" + tokens.size() + " tokens).");
+                    return;
+                }
             } catch (Exception e) {
                 System.err.println("Could not load existing data, re-seeding defaults: " + e.getMessage());
             }
         }
         seedInitialData();
         saveToDisk();
-        System.out.println("Thapar Dispensary DataStore initialized with rich default seed data.");
+        System.out.println("Thapar Dispensary DataStore initialized with 12+ tokens and rich seed data.");
     }
 
     private void loadFromDisk() throws IOException {
@@ -245,6 +259,10 @@ public class DataStore {
                         (String) m.get("status"),
                         (String) m.get("createdAt")
                 );
+                a.setTokenId((String) m.get("tokenId"));
+                a.setExpiresAt((String) m.get("expiresAt"));
+                a.setConfirmedAt((String) m.get("confirmedAt"));
+                a.setConfirmedBy((String) m.get("confirmedBy"));
                 a.setNotes((String) m.get("notes"));
                 appointments.put(a.getId(), a);
                 try {
@@ -304,6 +322,12 @@ public class DataStore {
                         (String) m.get("status"),
                         (String) m.get("createdAt")
                 );
+                t.setBookingType((String) m.get("bookingType"));
+                t.setRunningSlot((String) m.get("runningSlot"));
+                t.setAppointmentId((String) m.get("appointmentId"));
+                t.setConfirmedAt((String) m.get("confirmedAt"));
+                t.setConfirmedBy((String) m.get("confirmedBy"));
+                t.setExpiresAt((String) m.get("expiresAt"));
                 t.setCalledAt((String) m.get("calledAt"));
                 t.setCompletedAt((String) m.get("completedAt"));
                 t.setAssignedDoctor((String) m.get("assignedDoctor"));
@@ -406,7 +430,17 @@ public class DataStore {
 
     // ==================== THAPAR SEED DATA ====================
 
-    private void seedInitialData() {
+    public void seedInitialData() {
+        users.clear();
+        students.clear();
+        doctors.clear();
+        appointments.clear();
+        tokens.clear();
+        medicines.clear();
+        prescriptions.clear();
+        dispenseRecords.clear();
+        activityLogs.clear();
+
         String nowStr = LocalDateTime.now().format(ISO_FMT);
         String todayDate = LocalDate.now().toString();
 
@@ -415,57 +449,64 @@ public class DataStore {
         users.put("doctor", new User("U-002", "doctor", "doctor123", "Dr. Ananya Sharma (MD)", "DOCTOR", "dr.ananya@thapar.edu", nowStr));
         users.put("reception", new User("U-003", "reception", "reception123", "Mr. Gurpreet Singh (Reception)", "RECEPTIONIST", "reception.health@thapar.edu", nowStr));
         users.put("pharma", new User("U-004", "pharma", "pharma123", "Mr. Rakesh Verma (B.Pharm)", "PHARMACIST", "pharmacy.dispensary@thapar.edu", nowStr));
-        users.put("102103456", new User("U-005", "102103456", "student123", "Aarav Patel", "STUDENT", "apatel_be21@thapar.edu", nowStr));
-        users.put("102204123", new User("U-006", "102204123", "student123", "Priya Nair", "STUDENT", "pnair_be22@thapar.edu", nowStr));
-        users.put("102008765", new User("U-007", "102008765", "student123", "Rohan Gupta", "STUDENT", "rgupta_be20@thapar.edu", nowStr));
-        users.put("102301987", new User("U-008", "102301987", "student123", "Sneha Rao", "STUDENT", "srao_be23@thapar.edu", nowStr));
 
         // 2. Doctors
         doctors.put("DOC-001", new Doctor("DOC-001", "Dr. Ananya Sharma", "Chief Medical Officer / Internal Medicine", "MBBS, MD (Medicine)", "Chamber 1", "+91 98765 11001", "dr.ananya@thapar.edu", "Mon - Sat", "09:00 AM - 01:00 PM, 03:00 PM - 06:00 PM", "AVAILABLE"));
         doctors.put("DOC-002", new Doctor("DOC-002", "Dr. Rajesh Verma", "Senior Resident Physician", "MBBS, DNB (Family Medicine)", "Chamber 2", "+91 98765 11002", "dr.rajesh@thapar.edu", "Mon - Fri", "10:00 AM - 02:00 PM, 04:00 PM - 07:00 PM", "AVAILABLE"));
         doctors.put("DOC-003", new Doctor("DOC-003", "Dr. Harpreet Kaur", "Consultant Physician & Women's Health", "MBBS, DGO", "Chamber 3", "+91 98765 11003", "dr.harpreet@thapar.edu", "Mon - Sat", "08:30 AM - 12:30 PM", "AVAILABLE"));
 
-        // 3. Patients (Thapar Students & Staff)
-        students.put("102103456", new Student(
-                "102103456", "Aarav Patel", "Computer Science & Engg (CSED)", "3rd Year", "Male", 20,
-                "B+", "Penicillin, Amoxicillin", "Asthma (Mild)",
-                "Suresh Patel (Father)", "+91 98221 11223", "+91 99887 76655", "apatel_be21@thapar.edu"
-        ));
-        students.put("102204123", new Student(
-                "102204123", "Priya Nair", "Electronics & Comm (ECED)", "2nd Year", "Female", 19,
-                "O+", "Sulfa Drugs", "None",
-                "Radha Nair (Mother)", "+91 98440 22334", "+91 91234 56789", "pnair_be22@thapar.edu"
-        ));
-        students.put("102008765", new Student(
-                "102008765", "Rohan Gupta", "Mechanical Engg (MED)", "4th Year", "Male", 21,
-                "A+", "None", "Allergic Rhinitis",
-                "Deepak Gupta (Brother)", "+91 97110 33445", "+91 98765 12345", "rgupta_be20@thapar.edu"
-        ));
-        students.put("102301987", new Student(
-                "102301987", "Sneha Rao", "Chemical Engg (CHED)", "1st Year", "Female", 18,
-                "AB+", "Aspirin, NSAIDs", "None",
-                "Venkatesh Rao (Father)", "+91 96550 44556", "+91 99441 22334", "srao_be23@thapar.edu"
-        ));
+        // 3. Students / Patients (12 registered students across departments)
+        registerStudent("102103456", "Aarav Patel", "Computer Science & Engg (CSED)", "3rd Year", "Male", 20, "B+", "Penicillin, Amoxicillin", "Asthma (Mild)", "Suresh Patel (Father)", "+91 98221 11223", "+91 99887 76655");
+        registerStudent("102204123", "Priya Nair", "Electronics & Comm (ECED)", "2nd Year", "Female", 19, "O+", "Sulfa Drugs", "None", "Radha Nair (Mother)", "+91 98440 22334", "+91 91234 56789");
+        registerStudent("102008765", "Rohan Gupta", "Mechanical Engg (MED)", "4th Year", "Male", 21, "A+", "None", "Allergic Rhinitis", "Deepak Gupta (Brother)", "+91 97110 33445", "+91 98765 12345");
+        registerStudent("102301987", "Sneha Rao", "Chemical Engg (CHED)", "1st Year", "Female", 18, "AB+", "Aspirin, NSAIDs", "None", "Venkatesh Rao (Father)", "+91 96550 44556", "+91 99441 22334");
+        registerStudent("102105678", "Karan Sharma", "Computer Science (CSED)", "3rd Year", "Male", 20, "O+", "None", "None", "Rajesh Sharma (Father)", "+91 98111 22334", "+91 97112 33445");
+        registerStudent("102208912", "Ananya Verma", "Electronics & Comm (ECED)", "2nd Year", "Female", 19, "B+", "Dust, Pollen", "None", "Sunil Verma (Father)", "+91 98333 44556", "+91 91223 44556");
+        registerStudent("102003411", "Vikram Malhotra", "Civil Engg (CED)", "4th Year", "Male", 21, "A-", "None", "None", "Kamal Malhotra (Father)", "+91 98444 55667", "+91 98777 66554");
+        registerStudent("102307843", "Simranjit Kaur", "Biotechnology", "1st Year", "Female", 18, "O-", "Sulfa Drugs", "None", "Gurdev Singh (Father)", "+91 98555 66778", "+91 99888 77665");
+        registerStudent("102109823", "Jaspreet Singh", "Mechanical Engg (MED)", "3rd Year", "Male", 20, "B-", "None", "None", "Balwinder Singh (Father)", "+91 98666 77889", "+91 97665 44332");
+        registerStudent("102201944", "Mehak Preet", "Chemical Engg (CHED)", "2nd Year", "Female", 19, "AB-", "Aspirin", "Migraine", "Sukhdev Singh (Father)", "+91 98777 88990", "+91 98123 45678");
+        registerStudent("102004599", "Rahul Singla", "Computer Science (CSED)", "4th Year", "Male", 21, "A+", "None", "None", "Pawan Singla (Father)", "+91 98888 99001", "+91 99112 23344");
+        registerStudent("102306711", "Divya Jindal", "Electronics & Comm (ECED)", "1st Year", "Female", 18, "O+", "None", "None", "Anil Jindal (Father)", "+91 98999 00112", "+91 98776 54321");
 
-        // 4. Appointments
+        // 4. TOKENS - SEED AT LEAST 12 TOKENS FOR 10+ VISIBLE QUEUE BOARD
+        // T-101: In consultation
+        Token t101 = createSeedToken("T-101", 101, "102103456", "Aarav Patel", "CSED", "High fever (101°F), severe body ache, shivering", "URGENT", "IN_CONSULTATION", "WALK_IN", "09:30 AM - 09:45 AM", "Dr. Ananya Sharma", "Mr. Gurpreet Singh (Reception)");
+        t101.setCalledAt(nowStr);
+
+        // T-102 to T-106: WAITING (Checked In by Admin/Reception)
+        createSeedToken("T-102", 102, "102204123", "Priya Nair", "ECED", "Throat irritation, dry cough and mild headache", "NORMAL", "WAITING", "WALK_IN", "09:45 AM - 10:00 AM", null, "Mr. Gurpreet Singh (Reception)");
+        createSeedToken("T-103", 103, "102008765", "Rohan Gupta", "MED", "Sprained left ankle during basketball practice, acute swelling", "URGENT", "WAITING", "WALK_IN", "10:00 AM - 10:15 AM", null, "Dr. Vikramjit Singh (Admin)");
+        createSeedToken("T-104", 104, "102301987", "Sneha Rao", "CHED", "Stomach ache, acid reflux and nausea after hostel dinner", "NORMAL", "WAITING", "WALK_IN", "10:15 AM - 10:30 AM", null, "Mr. Gurpreet Singh (Reception)");
+        createSeedToken("T-105", 105, "102105678", "Karan Sharma", "CSED", "Allergic rash on arms, persistent itching", "NORMAL", "WAITING", "WALK_IN", "10:30 AM - 10:45 AM", null, "Front-Desk Staff");
+        createSeedToken("T-106", 106, "102208912", "Ananya Verma", "ECED", "Eye redness, burning sensation and watery discharge", "NORMAL", "WAITING", "WALK_IN", "10:45 AM - 11:00 AM", null, "Front-Desk Staff");
+
+        // T-107 to T-112: AWAITING_ARRIVAL (Booked online, awaiting physical arrival confirmation by admin)
+        createSeedToken("T-107", 107, "102003411", "Vikram Malhotra", "CED", "Mild fever and lower back stiffness", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "11:00 AM - 11:15 AM", null, null);
+        createSeedToken("T-108", 108, "102307843", "Simranjit Kaur", "Biotech", "Cut on right index finger while working in laboratory", "URGENT", "AWAITING_ARRIVAL", "WALK_IN", "11:15 AM - 11:30 AM", null, null);
+        createSeedToken("T-109", 109, "102109823", "Jaspreet Singh", "MED", "Follow-up consultation for seasonal asthma", "NORMAL", "AWAITING_ARRIVAL", "SCHEDULED", "11:30 AM - 11:45 AM", null, null);
+        createSeedToken("T-110", 110, "102201944", "Mehak Preet", "CHED", "Throbbing migraine headache and light sensitivity", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "11:45 AM - 12:00 PM", null, null);
+        createSeedToken("T-111", 111, "102004599", "Rahul Singla", "CSED", "Severe cold, nasal blockage and sinus pressure", "NORMAL", "AWAITING_ARRIVAL", "SCHEDULED", "12:00 PM - 12:15 PM", null, null);
+        createSeedToken("T-112", 112, "102306711", "Divya Jindal", "ECED", "Blister burn on palm from hostel kettle steam", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "12:15 PM - 12:30 PM", null, null);
+
+        tokenCounter.set(112);
+
+        // 5. Appointments
         Appointment apt1 = new Appointment("APT-1001", 101, "102103456", "Aarav Patel", "CSED", "DOC-001", "Dr. Ananya Sharma", todayDate, "09:30 AM - 10:00 AM", "High fever (101°F), severe body ache, shivering", "URGENT", "Confirmed", nowStr);
-        Appointment apt2 = new Appointment("APT-1002", 102, "102204123", "Priya Nair", "ECED", "DOC-001", "Dr. Ananya Sharma", todayDate, "10:00 AM - 10:30 AM", "Throat irritation, dry cough and mild headache", "NORMAL", "Pending", nowStr);
-        Appointment apt3 = new Appointment("APT-1003", 103, "102008765", "Rohan Gupta", "MED", "DOC-002", "Dr. Rajesh Verma", todayDate, "10:30 AM - 11:00 AM", "Sprained left ankle during basketball practice, acute swelling", "URGENT", "Pending", nowStr);
+        apt1.setTokenId("T-101");
+        apt1.setConfirmedAt(nowStr);
+        apt1.setConfirmedBy("Mr. Gurpreet Singh (Reception)");
+
+        Appointment apt2 = new Appointment("APT-1002", 109, "102109823", "Jaspreet Singh", "MED", "DOC-001", "Dr. Ananya Sharma", todayDate, "11:30 AM - 12:00 PM", "Follow-up consultation for seasonal asthma", "NORMAL", "Pending", nowStr);
+        apt2.setTokenId("T-109");
+
+        Appointment apt3 = new Appointment("APT-1003", 111, "102004599", "Rahul Singla", "CSED", "DOC-002", "Dr. Rajesh Verma", todayDate, "12:00 PM - 12:30 PM", "Severe cold, nasal blockage and sinus pressure", "NORMAL", "Pending", nowStr);
+        apt3.setTokenId("T-111");
+
         appointments.put(apt1.getId(), apt1);
         appointments.put(apt2.getId(), apt2);
         appointments.put(apt3.getId(), apt3);
-
-        // 5. Tokens
-        Token t1 = new Token("T-101", 101, "102103456", "Aarav Patel", "CSED", "High fever (101°F), severe body ache, shivering", "URGENT", "IN_CONSULTATION", nowStr);
-        t1.setCalledAt(nowStr);
-        t1.setAssignedDoctor("Dr. Ananya Sharma");
-        tokens.put(t1.getId(), t1);
-
-        Token t2 = new Token("T-102", 102, "102204123", "Priya Nair", "ECED", "Throat irritation, dry cough and mild headache", "NORMAL", "WAITING", nowStr);
-        tokens.put(t2.getId(), t2);
-
-        Token t3 = new Token("T-103", 103, "102008765", "Rohan Gupta", "MED", "Sprained left ankle during basketball practice, acute swelling", "URGENT", "WAITING", nowStr);
-        tokens.put(t3.getId(), t3);
+        appointmentCounter.set(1003);
 
         // 6. Medicines Inventory
         addMedicine("MED-001", "Paracetamol 500mg", "Acetaminophen", "Tablet", 200, 30, "strips (10 tabs)", "2027-08-30", "BAT-PAR-25", "Shelf A-1", "1 tab TDS after meals");
@@ -481,7 +522,7 @@ public class DataStore {
         addMedicine("MED-011", "Tetanus Toxoid 0.5ml", "TT Vaccine", "Injection", 12, 10, "vials", "2027-02-28", "BAT-TT-24", "Refrigerator R-1", "0.5ml IM single dose");
         addMedicine("MED-012", "Ciprofloxacin Eye/Ear Drops", "Ciprofloxacin 0.3%", "Drop", 14, 10, "bottles (5ml)", "2026-11-30", "BAT-CIP-24", "Shelf D-2", "2 drops in affected eye TDS");
 
-        // 7. Past Prescription & History
+        // 7. Prescriptions History
         Prescription p1 = new Prescription();
         p1.setId("RX-2026-1001");
         p1.setTokenId("T-098");
@@ -507,14 +548,35 @@ public class DataStore {
         p1.setItems(p1Items);
         prescriptions.put(p1.getId(), p1);
 
-        // 8. Dispense Records
         dispenseRecords.add(new DispenseRecord("DISP-5001", "RX-2026-1001", "102103456", "Aarav Patel", "MED-003", "Cetirizine 10mg", 5, "BAT-CET-25", "2026-11-12 10:45", "Mr. Rakesh Verma", "Issued 5 tablets"));
         dispenseRecords.add(new DispenseRecord("DISP-5002", "RX-2026-1001", "102103456", "Aarav Patel", "MED-009", "Pantoprazole 40mg", 5, "BAT-PAN-25", "2026-11-12 10:45", "Mr. Rakesh Verma", "Advised empty stomach"));
 
-        // 9. Activity Logs
-        logActivity("SYSTEM", "SYSTEM", "SYSTEM_INIT", "Thapar University Health & Dispensary Management System initialized.");
-        logActivity("reception", "RECEPTIONIST", "APPOINTMENT_BOOKED", "Booked APT-1001 for Aarav Patel (102103456) with Dr. Ananya Sharma.");
-        logActivity("doctor", "DOCTOR", "CONSULTATION_CALLED", "Called Token T-101 (Aarav Patel - 102103456) to Chamber 1.");
+        logActivity("SYSTEM", "SYSTEM", "SYSTEM_INIT", "Thapar University Health & Dispensary Management System initialized with 12 active queue tokens.");
+        logActivity("admin", "ADMIN", "ARRIVAL_CONFIRMED", "Confirmed physical arrival for Token #103 (Rohan Gupta). Admitted to queue.");
+        logActivity("doctor", "DOCTOR", "CONSULTATION_CALLED", "Called Token #101 (Aarav Patel) into Chamber 1.");
+    }
+
+    private void registerStudent(String rollNo, String name, String dept, String year, String gender, int age,
+                                 String bloodGroup, String allergies, String chronic,
+                                 String emgName, String emgPhone, String phone) {
+        Student s = new Student(rollNo, name, dept, year, gender, age, bloodGroup, allergies, chronic, emgName, emgPhone, phone, rollNo + "@thapar.edu");
+        students.put(rollNo, s);
+        users.put(rollNo, new User("U-" + rollNo, rollNo, "student123", name, "STUDENT", s.getEmail(), LocalDateTime.now().format(ISO_FMT)));
+    }
+
+    private Token createSeedToken(String id, int num, String rollNo, String name, String dept, String symptoms,
+                                  String priority, String status, String type, String slot, String doctor, String confirmedBy) {
+        String nowStr = LocalDateTime.now().format(ISO_FMT);
+        Token t = new Token(id, num, rollNo, name, dept, symptoms, priority, status, nowStr);
+        t.setBookingType(type);
+        t.setRunningSlot(slot);
+        t.setAssignedDoctor(doctor);
+        t.setConfirmedBy(confirmedBy);
+        if (confirmedBy != null) {
+            t.setConfirmedAt(nowStr);
+        }
+        tokens.put(id, t);
+        return t;
     }
 
     private void addMedicine(String id, String name, String generic, String cat, int stock, int min, String unit, String exp, String batch, String rack, String guide) {

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Login - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .login-container {
+      max-width: 540px;
+      margin: 2.5rem auto;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .login-header {
+      background: linear-gradient(135deg, #7a0c14 0%, #8b0000 100%);
+      color: white;
+      padding: 2rem 1.75rem 1.5rem 1.75rem;
+      text-align: center;
+    }
+    .portal-selector-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: #f1f5f9;
+      border-bottom: 2px solid var(--border);
+    }
+    .portal-tab-btn {
+      padding: 0.85rem 0.25rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: none;
+      background: none;
+      color: #64748b;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .portal-tab-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .portal-tab-btn.active {
+      background: white;
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .login-body {
+      padding: 2rem 1.75rem;
+    }
+    .demo-pill {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      color: #475569;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .auth-mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .auth-mode-toggle span {
+      cursor: pointer;
+      padding-bottom: 0.25rem;
+      color: #64748b;
+      border-bottom: 2px solid transparent;
+    }
+    .auth-mode-toggle span.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Campus Health Care & Dispensary Management System</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Home Hub</a>
+      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
+      <a href="/receptionist.html" class="nav-link">📋 Reception</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+    </div>
+  </header>
+
+  <!-- LOGIN CONTAINER -->
+  <main class="main-content">
+    <div class="login-container">
+      
+      <div class="login-header">
+        <div style="font-size: 2.2rem; margin-bottom: 0.25rem;" id="portal-icon">🎓</div>
+        <h2 style="font-size: 1.4rem; font-weight: 800;" id="portal-title">Student Healthcare Portal</h2>
+        <p style="font-size: 0.84rem; opacity: 0.9; margin-top: 0.2rem;" id="portal-subtitle">
+          Sign in with your University Roll Number & Password
+        </p>
+      </div>
+
+      <!-- ROLE SELECTOR TABS -->
+      <div class="portal-selector-tabs">
+        <button class="portal-tab-btn active" id="tab-student" onclick="selectPortal('student')">
+          <span style="font-size: 1.2rem;">🎓</span>
+          <span>Student</span>
+        </button>
+        <button class="portal-tab-btn" id="tab-doctor" onclick="selectPortal('doctor')">
+          <span style="font-size: 1.2rem;">🩺</span>
+          <span>Doctor</span>
+        </button>
+        <button class="portal-tab-btn" id="tab-receptionist" onclick="selectPortal('receptionist')">
+          <span style="font-size: 1.2rem;">📋</span>
+          <span>Reception</span>
+        </button>
+        <button class="portal-tab-btn" id="tab-pharmacy" onclick="selectPortal('pharmacy')">
+          <span style="font-size: 1.2rem;">💊</span>
+          <span>Pharmacy</span>
+        </button>
+        <button class="portal-tab-btn" id="tab-admin" onclick="selectPortal('admin')">
+          <span style="font-size: 1.2rem;">🛡️</span>
+          <span>Admin</span>
+        </button>
+      </div>
+
+      <div class="login-body">
+        
+        <!-- SIGN IN vs CREATE ID TOGGLE -->
+        <div class="auth-mode-toggle">
+          <span id="mode-signin-btn" class="active" onclick="setAuthMode('signin')">Sign In</span>
+          <span id="mode-register-btn" onclick="setAuthMode('register')">✨ Create New ID & Password</span>
+        </div>
+
+        <!-- 1. SIGN IN FORM -->
+        <div id="signin-section">
+          <div class="demo-pill" id="demo-credentials-box">
+            <span>Demo Account: <strong>102103456</strong> / <strong>student123</strong></span>
+            <button class="btn btn-sm btn-secondary" onclick="fillDemoCredentials()">Quick Fill</button>
+          </div>
+
+          <form id="login-form" onsubmit="handleLoginSubmit(event)">
+            <div class="form-group">
+              <label class="form-label" id="login-id-label">University Roll Number / ID *</label>
+              <input type="text" id="login-username" class="form-control" placeholder="e.g. 102103456" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; font-weight:700; padding:0.75rem;" id="login-submit-btn">
+              Sign In to Student Portal
+            </button>
+          </form>
+        </div>
+
+        <!-- 2. CREATE NEW ACCOUNT / REGISTER FORM -->
+        <div id="register-section" style="display:none;">
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.75rem; margin-bottom:1.25rem; font-size:0.82rem; color:#1e40af;">
+            📌 <strong>New Registration:</strong> Create your personalized account and password. It will immediately grant access to your portal!
+          </div>
+
+          <form id="register-form" onsubmit="handleRegisterSubmit(event)">
+            <div class="form-group">
+              <label class="form-label">Account Role Type *</label>
+              <select id="reg-role" class="form-control" onchange="handleRegRoleChange()">
+                <option value="STUDENT">Student / Patient Portal</option>
+                <option value="DOCTOR">Medical Officer (Doctor Chamber)</option>
+                <option value="RECEPTIONIST">Front-Desk Receptionist</option>
+                <option value="PHARMACIST">Dispensary Pharmacist</option>
+                <option value="ADMIN">Dispensary Administrator</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" id="reg-id-label">Roll Number / User ID *</label>
+                <input type="text" id="reg-username" class="form-control" placeholder="e.g. 102409999" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" id="reg-fullname" class="form-control" placeholder="e.g. Manan Seth" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" id="reg-password" class="form-control" placeholder="Choose a password" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="text" id="reg-phone" class="form-control" placeholder="+91 98765 43210">
+              </div>
+            </div>
+
+            <!-- STUDENT SPECIFIC FIELDS -->
+            <div id="student-specific-fields">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Department</label>
+                  <select id="reg-dept" class="form-control">
+                    <option value="Computer Science (CSED)">Computer Science (CSED)</option>
+                    <option value="Electronics & Comm (ECED)">Electronics & Comm (ECED)</option>
+                    <option value="Mechanical Engg (MED)">Mechanical Engg (MED)</option>
+                    <option value="Chemical Engg (CHED)">Chemical Engg (CHED)</option>
+                    <option value="Civil Engg (CED)">Civil Engg (CED)</option>
+                    <option value="Biotechnology">Biotechnology</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Blood Group</label>
+                  <select id="reg-blood" class="form-control">
+                    <option value="B+">B+</option>
+                    <option value="O+">O+</option>
+                    <option value="A+">A+</option>
+                    <option value="AB+">AB+</option>
+                    <option value="B-">B-</option>
+                    <option value="O-">O-</option>
+                    <option value="A-">A-</option>
+                    <option value="AB-">AB-</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Known Drug Allergies (e.g. Penicillin, Sulfa, None)</label>
+                <input type="text" id="reg-allergies" class="form-control" placeholder="None Reported">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="width:100%; font-weight:700; padding:0.75rem;">
+              ✨ Create Account & Proceed to Portal
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let currentPortal = 'student';
+
+    const portalConfigs = {
+      student: {
+        title: 'Student Healthcare Portal',
+        subtitle: 'Sign in with your University Roll Number & Password',
+        icon: '🎓',
+        idLabel: 'University Roll Number *',
+        idPlaceholder: 'e.g. 102103456',
+        demoUser: '102103456',
+        demoPass: 'student123',
+        btnText: 'Sign In to Student Portal',
+        redirect: '/student.html'
+      },
+      doctor: {
+        title: 'Doctor PC Consultation Workstation',
+        subtitle: 'Sign in with Doctor ID to access live patient chambers',
+        icon: '🩺',
+        idLabel: 'Doctor Username / ID *',
+        idPlaceholder: 'e.g. doctor',
+        demoUser: 'doctor',
+        demoPass: 'doctor123',
+        btnText: 'Sign In to Doctor Chamber',
+        redirect: '/doctor.html'
+      },
+      receptionist: {
+        title: 'Reception Front-Desk Portal',
+        subtitle: 'Sign in with Reception ID for intake and scheduling',
+        icon: '📋',
+        idLabel: 'Reception Username / ID *',
+        idPlaceholder: 'e.g. reception',
+        demoUser: 'reception',
+        demoPass: 'reception123',
+        btnText: 'Sign In to Reception Desk',
+        redirect: '/receptionist.html'
+      },
+      pharmacy: {
+        title: 'Pharmacy & Medicine Inventory',
+        subtitle: 'Sign in with Pharmacist ID to dispense medicines',
+        icon: '💊',
+        idLabel: 'Pharmacist Username / ID *',
+        idPlaceholder: 'e.g. pharma',
+        demoUser: 'pharma',
+        demoPass: 'pharma123',
+        btnText: 'Sign In to Pharmacy Desk',
+        redirect: '/inventory.html'
+      },
+      admin: {
+        title: 'Dispensary Administrator Dashboard',
+        subtitle: 'Sign in with Administrator credentials for executive oversight',
+        icon: '🛡️',
+        idLabel: 'Administrator Username *',
+        idPlaceholder: 'e.g. admin',
+        demoUser: 'admin',
+        demoPass: 'admin123',
+        btnText: 'Sign In to Admin Dashboard',
+        redirect: '/admin.html'
+      }
+    };
+
+    function initLoginPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedPortal = urlParams.get('portal') || 'student';
+      selectPortal(requestedPortal);
+      if (urlParams.get('mode') === 'register') {
+        setAuthMode('register');
+      }
+    }
+
+    function selectPortal(portalKey) {
+      if (!portalConfigs[portalKey]) portalKey = 'student';
+      currentPortal = portalKey;
+
+      document.querySelectorAll('.portal-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + portalKey);
+      if (activeTab) activeTab.classList.add('active');
+
+      const cfg = portalConfigs[portalKey];
+      document.getElementById('portal-title').innerText = cfg.title;
+      document.getElementById('portal-subtitle').innerText = cfg.subtitle;
+      document.getElementById('portal-icon').innerText = cfg.icon;
+      document.getElementById('login-id-label').innerText = cfg.idLabel;
+      document.getElementById('login-username').placeholder = cfg.idPlaceholder;
+      document.getElementById('login-submit-btn').innerText = cfg.btnText;
+
+      document.getElementById('demo-credentials-box').innerHTML = `
+        <span>Demo: <strong>${cfg.demoUser}</strong> / <strong>${cfg.demoPass}</strong></span>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoCredentials()">Quick Fill</button>
+      `;
+
+      // Update register role dropdown to match
+      const roleMap = { student: 'STUDENT', doctor: 'DOCTOR', receptionist: 'RECEPTIONIST', pharmacy: 'PHARMACIST', admin: 'ADMIN' };
+      document.getElementById('reg-role').value = roleMap[portalKey] || 'STUDENT';
+      handleRegRoleChange();
+    }
+
+    function setAuthMode(mode) {
+      if (mode === 'signin') {
+        document.getElementById('mode-signin-btn').classList.add('active');
+        document.getElementById('mode-register-btn').classList.remove('active');
+        document.getElementById('signin-section').style.display = 'block';
+        document.getElementById('register-section').style.display = 'none';
+      } else {
+        document.getElementById('mode-register-btn').classList.add('active');
+        document.getElementById('mode-signin-btn').classList.remove('active');
+        document.getElementById('signin-section').style.display = 'none';
+        document.getElementById('register-section').style.display = 'block';
+      }
+    }
+
+    function fillDemoCredentials() {
+      const cfg = portalConfigs[currentPortal];
+      document.getElementById('login-username').value = cfg.demoUser;
+      document.getElementById('login-password').value = cfg.demoPass;
+    }
+
+    function handleRegRoleChange() {
+      const role = document.getElementById('reg-role').value;
+      const isStudent = role === 'STUDENT';
+      document.getElementById('student-specific-fields').style.display = isStudent ? 'block' : 'none';
+      document.getElementById('reg-id-label').innerText = isStudent ? 'Roll Number / Student ID *' : 'Staff Username / ID *';
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value.trim();
+
+      try {
+        const resp = await apiCall('/api/auth/login', 'POST', { username: u, password: p });
+        if (resp.success && resp.data) {
+          setCurrentUser(resp.data.token, resp.data.user);
+          showToast(`Welcome, ${resp.data.user.fullName}!`, 'success');
+          
+          // Role-based redirection to respective page
+          setTimeout(() => {
+            const role = resp.data.user.role;
+            if (role === 'DOCTOR') window.location.href = '/doctor.html';
+            else if (role === 'PHARMACIST') window.location.href = '/inventory.html';
+            else if (role === 'RECEPTIONIST') window.location.href = '/receptionist.html';
+            else if (role === 'ADMIN') window.location.href = '/admin.html';
+            else window.location.href = '/student.html';
+          }, 400);
+        }
+      } catch (err) {
+        showToast(err.message || 'Login failed', 'error');
+      }
+    }
+
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const role = document.getElementById('reg-role').value;
+      const payload = {
+        username: document.getElementById('reg-username').value.trim(),
+        password: document.getElementById('reg-password').value.trim(),
+        fullName: document.getElementById('reg-fullname').value.trim(),
+        role: role,
+        phone: document.getElementById('reg-phone').value.trim(),
+        department: document.getElementById('reg-dept') ? document.getElementById('reg-dept').value : '',
+        bloodGroup: document.getElementById('reg-blood') ? document.getElementById('reg-blood').value : '',
+        allergies: document.getElementById('reg-allergies') ? document.getElementById('reg-allergies').value : 'None'
+      };
+
+      try {
+        const resp = await apiCall('/api/auth/register', 'POST', payload);
+        if (resp.success && resp.data) {
+          setCurrentUser(resp.data.token, resp.data.user);
+          showToast(`Account created for ${resp.data.user.fullName}!`, 'success');
+
+          // Navigate to newly registered person's respective page
+          setTimeout(() => {
+            if (role === 'DOCTOR') window.location.href = '/doctor.html';
+            else if (role === 'PHARMACIST') window.location.href = '/inventory.html';
+            else if (role === 'RECEPTIONIST') window.location.href = '/receptionist.html';
+            else if (role === 'ADMIN') window.location.href = '/admin.html';
+            else window.location.href = '/student.html';
+          }, 500);
+        }
+      } catch (err) {
+        showToast(err.message || 'Registration failed', 'error');
+      }
+    }
+
+    initLoginPage();
+  </script>
+</body>
+</html>

@@ -102,16 +102,25 @@ async function quickLogin(username, password, redirectUrl) {
 // ==================== BADGE HELPERS ====================
 function getStatusBadge(status) {
   const s = (status || '').toUpperCase();
-  if (s === 'URGENT' || s === 'EMERGENCY' || s === 'CANCELLED') {
+  if (s === 'AWAITING_ARRIVAL') {
+    return `<span class="badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">⏳ Awaiting Arrival</span>`;
+  }
+  if (s === 'EXPIRED') {
+    return `<span class="badge" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca;">⚠️ Expired</span>`;
+  }
+  if (s === 'URGENT' || s === 'EMERGENCY') {
     return `<span class="badge badge-urgent">${status}</span>`;
   }
+  if (s === 'CANCELLED') {
+    return `<span class="badge badge-urgent">Cancelled</span>`;
+  }
   if (s === 'WAITING' || s === 'PENDING') {
-    return `<span class="badge badge-waiting">${status}</span>`;
+    return `<span class="badge badge-waiting">In Queue</span>`;
   }
-  if (s === 'IN_CONSULTATION' || s === 'CONFIRMED') {
-    return `<span class="badge badge-consultation">${status}</span>`;
+  if (s === 'IN_CONSULTATION') {
+    return `<span class="badge badge-consultation">In Consultation</span>`;
   }
-  if (s === 'COMPLETED' || s === 'DISPENSED') {
+  if (s === 'CONFIRMED' || s === 'COMPLETED' || s === 'DISPENSED') {
     return `<span class="badge badge-completed">${status}</span>`;
   }
   return `<span class="badge">${status}</span>`;
@@ -234,4 +243,21 @@ function showPrescriptionSlip(p) {
 function closeSlipModal() {
   const modal = document.getElementById('slip-modal-container');
   if (modal) modal.classList.remove('active');
+}
+
+// ==================== SIMULATION REFRESH & RESET ====================
+async function resetSimulationData() {
+  if (!confirm("Are you sure you want to refresh all simulation data to the starting state?\n\nThis will reset:\n• Active queue tokens back to starting queue (#101-#112)\n• Default student & doctor accounts\n• Original appointment schedule\n• Full medicine inventory stock levels")) {
+    return;
+  }
+  try {
+    showToast("Refreshing simulation data...", "info");
+    const res = await apiCall('/api/admin/reset-data', 'POST');
+    showToast(res.message || "All dispensary simulation data has been reset to starting state!", "success");
+    setTimeout(() => {
+      window.location.reload();
+    }, 700);
+  } catch (err) {
+    showToast("Reset failed: " + err.message, "error");
+  }
 }

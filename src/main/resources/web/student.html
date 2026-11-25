@@ -11,39 +11,66 @@
       color: white;
       border-radius: 12px;
       padding: 1.5rem;
-      margin-bottom: 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.5rem;
+      margin-bottom: 1.5rem;
       box-shadow: var(--shadow);
     }
     .queue-token-box {
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 10px;
-      padding: 1rem 1.5rem;
+      padding: 0.9rem 1.25rem;
       text-align: center;
-      min-width: 160px;
+      min-width: 140px;
     }
     .queue-token-number {
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-weight: 800;
       color: #fbbf24;
-      line-height: 1;
+      line-height: 1.1;
     }
-    .medical-history-card {
-      background: white;
-      border: 1px solid var(--border);
+    .token-guidance-banner {
       border-radius: 10px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-      transition: all 0.2s;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    .medical-history-card:hover {
-      box-shadow: var(--shadow);
-      border-color: #cbd5e1;
+    .token-guidance-awaiting {
+      background: #fffbeb;
+      border: 2px solid #fde68a;
+      color: #92400e;
+    }
+    .token-guidance-waiting {
+      background: #eff6ff;
+      border: 2px solid #bfdbfe;
+      color: #1e40af;
+    }
+    .token-guidance-calling {
+      background: #ecfdf5;
+      border: 2px solid #a7f3d0;
+      color: #065f46;
+    }
+    .token-guidance-expired {
+      background: #fef2f2;
+      border: 2px solid #fecaca;
+      color: #991b1b;
+    }
+    .queue-board-table th, .queue-board-table td {
+      padding: 0.65rem 0.85rem;
+      font-size: 0.84rem;
+    }
+    .row-highlight-mine {
+      background: #fef9c3 !important;
+      font-weight: 700;
+      border-left: 4px solid #ca8a04;
+    }
+    .row-current-calling {
+      background: #f0fdf4 !important;
+      font-weight: 700;
+      border-left: 4px solid #16a34a;
     }
   </style>
 </head>
@@ -62,6 +89,7 @@
       <a href="/index.html" class="nav-link">🏠 Hub</a>
       <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
       <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <a href="/receptionist.html" class="nav-link">📋 Reception Desk</a>
       <div class="user-badge" id="student-badge">
         <span>🎓</span>
         <span id="student-name-display">Aarav Patel (102103456)</span>
@@ -93,37 +121,87 @@
       </div>
     </div>
 
-    <!-- LIVE TOKEN & APPOINTMENT STATUS -->
+    <!-- STUDENT ACTIVE TOKEN STATUS BANNER -->
+    <div id="student-token-guidance-box" style="display:none;"></div>
+
+    <!-- LIVE TOKEN & QUEUE TRACKER HEADER -->
     <div class="queue-status-card">
-      <div>
-        <span class="badge" style="background:rgba(251,191,36,0.2); color:#fbbf24; margin-bottom:0.5rem;">Dispensary Live Queue</span>
-        <h3 style="font-size:1.4rem; font-weight:700; margin-bottom:0.25rem;">Consultation Queue Tracker</h3>
-        <p style="font-size:0.85rem; opacity:0.8;" id="queue-desc">Real-time status of your visit and clinic queue</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <span class="badge" style="background:rgba(251,191,36,0.25); color:#fbbf24; margin-bottom:0.4rem;">Real-Time Queue Tracker</span>
+          <h3 style="font-size:1.35rem; font-weight:700;">Live Consultation Queue & Running Slots</h3>
+          <p style="font-size:0.85rem; opacity:0.85;" id="queue-desc">Clinic Open · Tokens run sequentially according to running time slots</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;" onclick="openTokenModal()">
+            🎫 Book Walk-in Queue Token
+          </button>
+          <button class="btn btn-secondary" style="background:white; font-weight:600;" onclick="openAppointmentModal()">
+            📅 Book Scheduled Slot (30m Prior)
+          </button>
+        </div>
       </div>
 
       <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
         <!-- NOW SERVING -->
-        <div class="queue-token-box">
-          <div style="font-size:0.75rem; text-transform:uppercase; opacity:0.8;">Now Serving</div>
-          <div class="queue-token-number" id="now-serving-token">#101</div>
-          <div style="font-size:0.75rem; opacity:0.8;">Chamber 1</div>
+        <div class="queue-token-box" style="background:rgba(34, 197, 94, 0.2); border-color:#22c55e;">
+          <div style="font-size:0.72rem; text-transform:uppercase; color:#86efac; font-weight:700;">Now Serving</div>
+          <div class="queue-token-number" style="color:#4ade80;" id="now-serving-token">#101</div>
+          <div style="font-size:0.75rem; opacity:0.9;">Chamber 1 · Dr. Ananya</div>
         </div>
 
-        <!-- MY TOKEN -->
-        <div class="queue-token-box" style="border-color:#fbbf24; background:rgba(251,191,36,0.15);">
-          <div style="font-size:0.75rem; text-transform:uppercase; color:#fbbf24;">Your Token</div>
-          <div class="queue-token-number" id="my-token-number">#101</div>
-          <div style="font-size:0.75rem;" id="my-token-status">IN CONSULTATION</div>
+        <!-- YOUR TOKEN -->
+        <div class="queue-token-box" style="border-color:#fbbf24; background:rgba(251,191,36,0.2);">
+          <div style="font-size:0.72rem; text-transform:uppercase; color:#fbbf24; font-weight:700;">Your Token</div>
+          <div class="queue-token-number" id="my-token-number">--</div>
+          <div style="font-size:0.75rem;" id="my-token-status">NO ACTIVE TOKEN</div>
+        </div>
+
+        <!-- RUNNING SLOT -->
+        <div class="queue-token-box">
+          <div style="font-size:0.72rem; text-transform:uppercase; opacity:0.8;">Your Running Slot</div>
+          <div style="font-size:1.05rem; font-weight:700; color:#f8fafc; margin:0.3rem 0;" id="my-token-slot">--</div>
+          <div style="font-size:0.72rem; opacity:0.8;">Sequential Allocation</div>
+        </div>
+
+        <!-- QUEUE STATS -->
+        <div class="queue-token-box">
+          <div style="font-size:0.72rem; text-transform:uppercase; opacity:0.8;">Admitted Queue</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#38bdf8;" id="total-waiting-count">0</div>
+          <div style="font-size:0.72rem; opacity:0.8;" id="total-wait-time">~0 mins wait</div>
         </div>
       </div>
+    </div>
 
-      <div>
-        <button class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;" onclick="openTokenModal()">
-          🎫 Book Walk-in Queue Token
-        </button>
-        <button class="btn btn-secondary" style="background:white; margin-left:0.5rem;" onclick="openAppointmentModal()">
-          📅 Book Scheduled Appointment
-        </button>
+    <!-- FULL 10+ TOKEN QUEUE DISPLAY BOARD -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-header" style="background:#f8fafc;">
+        <div>
+          <h3><span>📋</span> Live Dispensary Queue Board (All Running Tokens)</h3>
+          <p style="font-size:0.78rem; color:#64748b; margin-top:0.15rem;">
+            Shows currently active tokens and upcoming running slots. Walk-in tokens must be confirmed at the desk upon student arrival to be called.
+          </p>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="updateQueueStatus()">🔄 Live Refresh</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table queue-board-table">
+          <thead>
+            <tr>
+              <th>Queue Pos</th>
+              <th>Token #</th>
+              <th>Patient Name & Roll No</th>
+              <th>Department</th>
+              <th>Running Slot Time</th>
+              <th>Priority</th>
+              <th>Type</th>
+              <th>Arrival / Queue Status</th>
+            </tr>
+          </thead>
+          <tbody id="queue-board-body">
+            <tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#64748b;">Loading full live queue board...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -138,7 +216,6 @@
             <button class="btn btn-sm btn-secondary" onclick="loadStudentData()">🔄 Refresh</button>
           </div>
           <div class="card-body" id="prescriptions-list">
-            <!-- Dynamic prescription cards loaded here -->
             <p style="color:#64748b; font-size:0.88rem;">Loading medical history...</p>
           </div>
         </div>
@@ -149,7 +226,7 @@
         <!-- MY APPOINTMENTS -->
         <div class="card">
           <div class="card-header">
-            <h3><span>📅</span> My Appointments</h3>
+            <h3><span>📅</span> My Scheduled Appointments</h3>
           </div>
           <div class="card-body" id="my-appointments-list" style="padding:1rem;">
             <p style="color:#64748b; font-size:0.85rem;">Loading appointments...</p>
@@ -196,17 +273,21 @@
 
   </main>
 
-  <!-- BOOK TOKEN MODAL -->
+  <!-- BOOK WALK-IN TOKEN MODAL -->
   <div id="token-modal" class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
-        <h3>Join Dispensary Walk-in Queue</h3>
+        <h3>Book Walk-in Queue Token</h3>
         <button class="btn btn-sm btn-secondary" onclick="closeTokenModal()">✕</button>
       </div>
       <div class="modal-body">
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:0.85rem; margin-bottom:1rem; font-size:0.84rem; color:#92400e;">
+          📌 <strong>Important University Rule:</strong><br>
+          Upon booking a walk-in token online, your token status will be <strong>"Awaiting Arrival"</strong>. You must show your roll number to the Admin/Reception desk upon reaching the dispensary to confirm your presence and be admitted into the doctor's active queue.
+        </div>
         <form id="token-form" onsubmit="handleGenerateToken(event)">
           <div class="form-group">
-            <label class="form-label">Symptoms / Reason for Consultation</label>
+            <label class="form-label">Symptoms / Reason for Consultation *</label>
             <textarea id="token-symptoms" class="form-control" rows="3" placeholder="Describe symptoms (e.g. fever, headache, sprained wrist, stomach pain...)" required></textarea>
           </div>
           <div class="form-group">
@@ -217,13 +298,13 @@
               <option value="EMERGENCY">Emergency (Breathing difficulty, trauma)</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;">Generate Live Token</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Book Walk-in Token</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- BOOK APPOINTMENT MODAL -->
+  <!-- BOOK SCHEDULED APPOINTMENT MODAL -->
   <div id="appointment-modal" class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -231,6 +312,11 @@
         <button class="btn btn-sm btn-secondary" onclick="closeAppointmentModal()">✕</button>
       </div>
       <div class="modal-body">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.85rem; margin-bottom:1rem; font-size:0.84rem; color:#1e40af;">
+          ⏱️ <strong>30-Minute Prior Booking & Expiration Rule:</strong><br>
+          • Scheduled slots must be booked <strong>at least 30 minutes prior</strong> to the slot start time.<br>
+          • If you do not check in at the dispensary within <strong>30 minutes after your slot start time</strong>, the token automatically <strong>expires</strong> and a new token will be needed.
+        </div>
         <form id="appointment-form" onsubmit="handleBookAppointment(event)">
           <div class="form-group">
             <label class="form-label">Select Medical Officer</label>
@@ -248,12 +334,16 @@
             <div class="form-group">
               <label class="form-label">Time Slot</label>
               <select id="apt-timeslot" class="form-control" required>
-                <option value="09:30 AM - 10:00 AM">09:30 AM - 10:00 AM</option>
+                <!-- Generated dynamically according to current time -->
                 <option value="10:00 AM - 10:30 AM">10:00 AM - 10:30 AM</option>
                 <option value="10:30 AM - 11:00 AM">10:30 AM - 11:00 AM</option>
                 <option value="11:00 AM - 11:30 AM">11:00 AM - 11:30 AM</option>
+                <option value="11:30 AM - 12:00 PM">11:30 AM - 12:00 PM</option>
+                <option value="12:00 PM - 12:30 PM">12:00 PM - 12:30 PM</option>
                 <option value="03:30 PM - 04:00 PM">03:30 PM - 04:00 PM</option>
                 <option value="04:00 PM - 04:30 PM">04:00 PM - 04:30 PM</option>
+                <option value="04:30 PM - 05:00 PM">04:30 PM - 05:00 PM</option>
+                <option value="05:00 PM - 05:30 PM">05:00 PM - 05:30 PM</option>
               </select>
             </div>
           </div>
@@ -261,7 +351,7 @@
             <label class="form-label">Reason / Symptoms</label>
             <input type="text" id="apt-symptoms" class="form-control" placeholder="e.g. Follow-up consultation, allergic symptoms" required>
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;">Confirm Appointment Booking</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Confirm Scheduled Booking</button>
         </form>
       </div>
     </div>
@@ -270,6 +360,7 @@
   <script src="/js/app.js"></script>
   <script>
     let currentRollNo = '102103456';
+    let myActiveTokenData = null;
 
     async function initStudentPortal() {
       const user = getCurrentUser();
@@ -279,7 +370,7 @@
       document.getElementById('apt-date').value = new Date().toISOString().substring(0, 10);
       await loadStudentData();
       await updateQueueStatus();
-      setInterval(updateQueueStatus, 5000); // Live poll queue every 5 seconds
+      setInterval(updateQueueStatus, 4000); // Poll live queue every 4 seconds
     }
 
     async function loadStudentData() {
@@ -356,22 +447,122 @@
     async function updateQueueStatus() {
       try {
         const q = await apiCall('/api/tokens/queue');
+        
+        // 1. Current serving token
         if (q.currentConsultation) {
           document.getElementById('now-serving-token').innerText = '#' + q.currentConsultation.tokenNumber;
         } else {
           document.getElementById('now-serving-token').innerText = 'None';
         }
 
+        document.getElementById('total-waiting-count').innerText = q.totalWaiting;
+        document.getElementById('total-wait-time').innerText = `~${q.estimatedWaitMins} mins estimated wait`;
+
+        // 2. Fetch student's own active token
         const myToken = await apiCall('/api/tokens/student?rollNo=' + currentRollNo);
+        myActiveTokenData = myToken;
+
+        const guidanceBox = document.getElementById('student-token-guidance-box');
+
         if (myToken) {
           document.getElementById('my-token-number').innerText = '#' + myToken.tokenNumber;
-          document.getElementById('my-token-status').innerText = myToken.status;
-          document.getElementById('queue-desc').innerText = `Active Token #${myToken.tokenNumber} · Status: ${myToken.status} · Priority: ${myToken.priority}`;
+          document.getElementById('my-token-status').innerText = myToken.status.replace('_', ' ');
+          document.getElementById('my-token-slot').innerText = myToken.runningSlot || 'Assigned soon';
+          
+          guidanceBox.style.display = 'block';
+
+          if (myToken.status === 'AWAITING_ARRIVAL') {
+            guidanceBox.className = 'token-guidance-banner token-guidance-awaiting';
+            guidanceBox.innerHTML = `
+              <div>
+                <strong style="font-size:1rem;">📍 Step 2 Required: Physical Arrival Confirmation Needed</strong>
+                <p style="font-size:0.85rem; margin-top:0.2rem;">
+                  You have booked <strong>Token #${myToken.tokenNumber}</strong> (${myToken.bookingType}) for slot <strong>${myToken.runningSlot}</strong>. 
+                  Please present your University ID at the <strong>Reception / Admin Desk</strong> upon arrival to confirm your presence and be admitted into the doctor's active queue.
+                </p>
+              </div>
+              <span class="badge" style="background:#f59e0b; color:white; font-size:0.8rem;">Pending Check-in</span>
+            `;
+          } else if (myToken.status === 'WAITING') {
+            guidanceBox.className = 'token-guidance-banner token-guidance-waiting';
+            guidanceBox.innerHTML = `
+              <div>
+                <strong style="font-size:1rem;">✅ Check-in Confirmed! You are in the Active Queue</strong>
+                <p style="font-size:0.85rem; margin-top:0.2rem;">
+                  Arrival confirmed by <strong>${myToken.confirmedBy || 'Staff'}</strong> at ${myToken.confirmedAt || 'Today'}. 
+                  Your assigned consultation slot is <strong>${myToken.runningSlot}</strong>. Please be seated in the waiting lobby near Chamber 1.
+                </p>
+              </div>
+              <span class="badge badge-waiting" style="font-size:0.8rem;">Admitted to Queue</span>
+            `;
+          } else if (myToken.status === 'IN_CONSULTATION') {
+            guidanceBox.className = 'token-guidance-banner token-guidance-calling';
+            guidanceBox.innerHTML = `
+              <div>
+                <strong style="font-size:1.05rem;">🩺 DOCTOR IS CALLING TOKEN #${myToken.tokenNumber}!</strong>
+                <p style="font-size:0.85rem; margin-top:0.2rem;">
+                  Please enter <strong>Chamber 1 (Dr. Ananya Sharma)</strong> immediately for your clinical consultation.
+                </p>
+              </div>
+              <span class="badge badge-completed" style="font-size:0.85rem; padding:0.4rem 0.8rem;">Inside Chamber</span>
+            `;
+          } else if (myToken.status === 'EXPIRED') {
+            guidanceBox.className = 'token-guidance-banner token-guidance-expired';
+            guidanceBox.innerHTML = `
+              <div>
+                <strong style="font-size:1rem;">⚠️ Token #${myToken.tokenNumber} Has Expired</strong>
+                <p style="font-size:0.85rem; margin-top:0.2rem;">
+                  Your scheduled token expired because arrival check-in was not completed within 30 minutes of the slot. Please click the button to book a new token.
+                </p>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="openTokenModal()">Book New Token</button>
+            `;
+          }
         } else {
           document.getElementById('my-token-number').innerText = '--';
-          document.getElementById('my-token-status').innerText = 'NO TOKEN';
-          document.getElementById('queue-desc').innerText = `Clinic Open · ${q.totalWaiting} patients currently waiting (~${q.estimatedWaitMins} mins wait)`;
+          document.getElementById('my-token-status').innerText = 'NO ACTIVE TOKEN';
+          document.getElementById('my-token-slot').innerText = 'None';
+          guidanceBox.style.display = 'none';
         }
+
+        // 3. Render Full 10+ Queue Board Table
+        const board = q.fullQueueBoard || [];
+        const boardBody = document.getElementById('queue-board-body');
+
+        if (board.length === 0) {
+          boardBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#64748b;">No active tokens currently in queue.</td></tr>';
+        } else {
+          boardBody.innerHTML = board.map(item => {
+            const isMine = item.studentRollNo === currentRollNo;
+            const isCurrent = item.isCurrent;
+            let rowClass = '';
+            if (isCurrent) rowClass = 'row-current-calling';
+            else if (isMine) rowClass = 'row-highlight-mine';
+
+            const posBadge = isCurrent
+              ? '<span class="badge" style="background:#16a34a; color:white;">● NOW CALLING</span>'
+              : `<strong>#${item.position}</strong>`;
+
+            const mineBadge = isMine ? '<span class="badge" style="background:#ca8a04; color:white; margin-left:0.4rem;">YOU</span>' : '';
+
+            return `
+              <tr class="${rowClass}">
+                <td>${posBadge}</td>
+                <td><strong style="color:#8b0000; font-size:0.95rem;">#${item.tokenNumber}</strong></td>
+                <td>
+                  <strong>${item.studentName}</strong> ${mineBadge}
+                  <div style="font-size:0.75rem; color:#64748b;">Roll: ${item.studentRollNo}</div>
+                </td>
+                <td>${item.department}</td>
+                <td><code style="background:#f1f5f9; padding:0.2rem 0.4rem; border-radius:4px; font-weight:700;">${item.runningSlot}</code></td>
+                <td>${getStatusBadge(item.priority)}</td>
+                <td><span style="font-size:0.75rem; color:#475569; font-weight:600;">${item.bookingType}</span></td>
+                <td>${getStatusBadge(item.status)}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+
       } catch (e) {
         console.log(e);
       }
@@ -393,16 +584,18 @@
 
     async function handleGenerateToken(e) {
       e.preventDefault();
-      const symptoms = document.getElementById('token-symptoms').value;
+      const symptoms = document.getElementById('token-symptoms').value.trim();
       const priority = document.getElementById('token-priority').value;
 
       try {
         const resp = await apiCall('/api/tokens', 'POST', {
           studentRollNo: currentRollNo,
           symptoms: symptoms,
-          priority: priority
+          priority: priority,
+          bookingType: 'WALK_IN',
+          role: 'STUDENT'
         });
-        showToast('Token #' + resp.data.tokenNumber + ' generated successfully!', 'success');
+        showToast(resp.message || 'Walk-in Token #' + resp.data.tokenNumber + ' booked successfully!', 'success');
         closeTokenModal();
         await updateQueueStatus();
       } catch (err) {
@@ -436,7 +629,7 @@
     }
 
     function openStudentSwitcher() {
-      const target = prompt('Enter Student Roll No to switch demo (e.g. 102103456, 102204123, 102008765, 102301987):', currentRollNo);
+      const target = prompt('Enter Student Roll No to switch demo (e.g. 102103456, 102204123, 102008765, 102301987, 102105678, 102003411):', currentRollNo);
       if (target) {
         currentRollNo = target.trim();
         loadStudentData();

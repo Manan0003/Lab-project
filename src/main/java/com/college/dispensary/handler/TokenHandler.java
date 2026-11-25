@@ -33,12 +33,17 @@ public class TokenHandler implements HttpHandler {
         } else if ("/api/tokens/queue".equals(path) && "GET".equalsIgnoreCase(method)) {
             Map<String, Object> queueData = new LinkedHashMap<>();
             List<Token> waiting = tokenService.getWaitingQueue();
+            List<Token> awaitingArrival = tokenService.getAwaitingArrivalList();
             Token current = tokenService.getCurrentConsultationToken();
+            List<Map<String, Object>> fullBoard = tokenService.getFullQueueBoard();
 
             queueData.put("currentConsultation", current);
             queueData.put("waitingQueue", waiting);
+            queueData.put("awaitingArrival", awaitingArrival);
+            queueData.put("fullQueueBoard", fullBoard);
             queueData.put("totalWaiting", waiting.size());
-            queueData.put("estimatedWaitMins", waiting.size() * 10);
+            queueData.put("totalAwaitingArrival", awaitingArrival.size());
+            queueData.put("estimatedWaitMins", waiting.size() * 12);
 
             HttpUtil.sendJsonResponse(exchange, 200, queueData);
         } else if ("/api/tokens/student".equals(path) && "GET".equalsIgnoreCase(method)) {
@@ -50,6 +55,8 @@ public class TokenHandler implements HttpHandler {
             }
             Token active = tokenService.getStudentActiveToken(rollNo);
             HttpUtil.sendJsonResponse(exchange, 200, active);
+        } else if ("/api/tokens/confirm-arrival".equals(path) && "POST".equalsIgnoreCase(method)) {
+            handleConfirmArrival(exchange);
         } else if ("/api/tokens/cancel".equals(path) && "POST".equalsIgnoreCase(method)) {
             Map<String, Object> body = HttpUtil.readJsonBody(exchange);
             String tokenId = (String) body.get("tokenId");
@@ -70,13 +77,42 @@ public class TokenHandler implements HttpHandler {
         String rollNo = (String) body.get("studentRollNo");
         String symptoms = (String) body.get("symptoms");
         String priority = (String) body.get("priority");
+        String bookingType = (String) body.get("bookingType");
+        String role = (String) body.get("role");
 
         if (rollNo == null || rollNo.isBlank()) {
             HttpUtil.sendError(exchange, 400, "Student Roll Number is required");
             return;
         }
 
-        Token token = tokenService.createToken(rollNo, symptoms, priority);
-        HttpUtil.sendSuccess(exchange, "Token #" + token.getTokenNumber() + " booked successfully", token);
+        Token token = tokenService.createToken(rollNo, symptoms, priority, bookingType, null, role);
+        String msg = "AWAITING_ARRIVAL".equals(token.getStatus())
+                ? "Walk-in Token #" + token.getTokenNumber() + " booked! Please check in at the reception desk upon reaching the dispensary to enter the active doctor queue."
+                : "Token #" + token.getTokenNumber() + " admitted directly to queue.";
+        HttpUtil.sendSuccess(exchange, msg, token);
+    }
+
+    private void handleConfirmArrival(HttpExchange exchange) throws IOException {
+        Map<String, Object> body = HttpUtil.readJsonBody(exchange);
+        String tokenId = (String) body.get("tokenId");
+        String confirmedBy = (String) body.get("confirmedBy");
+
+        if (tokenId == null || tokenId.isBlank()) {
+            HttpUtil.sendError(exchange, 400, "tokenId is required");
+            return;
+        }
+
+        try {
+            Token confirmed = tokenService.confirmArrival(tokenId, confirmedBy);
+            if (confirmed == null) {
+                HttpUtil.sendError(exchange, 404, "Token not found");
+            } else {
+                HttpUtil.sendSuccess(exchange, "Arrival confirmed for Token #" + confirmed.getTokenNumber() + ". Admitted to consultation queue (Slot: " + confirmed.getRunningSlot() + ").", confirmed);
+            }
+        } catch (IllegalStateException e) {
+            HttpUtil.sendError(exchange, 400, e.getMessage());
+        } catch (Exception e) {
+            HttpUtil.sendError(exchange, 500, e.getMessage());
+        }
     }
 }

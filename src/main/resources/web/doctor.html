@@ -346,7 +346,8 @@
                 </div>
                 <div style="font-weight:600; font-size:0.88rem; color:#8b0000; margin-top:0.2rem;">${t.studentName}</div>
                 <div style="font-size:0.78rem; color:#64748b;">Roll: ${t.studentRollNo} · ${t.department}</div>
-                <div style="font-size:0.75rem; color:#475569; margin-top:0.25rem;">Complaints: ${t.symptoms}</div>
+                <div style="font-size:0.75rem; color:#0284c7; font-weight:700; margin-top:0.2rem;">⏱️ Slot: ${t.runningSlot || 'Running Slot'}</div>
+                <div style="font-size:0.75rem; color:#475569; margin-top:0.15rem;">Complaints: ${t.symptoms}</div>
               </div>
             `;
           }).join('');

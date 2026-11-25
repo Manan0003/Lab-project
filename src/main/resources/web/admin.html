@@ -74,7 +74,7 @@
       <div class="stat-card">
         <div class="stat-icon" style="background:#fef2f2; color:#8b0000;">👥</div>
         <div class="stat-info">
-          <div class="stat-value" id="adm-patients">4</div>
+          <div class="stat-value" id="adm-patients">12</div>
           <div class="stat-label">Total Patients Registered</div>
         </div>
       </div>
@@ -112,6 +112,37 @@
           <div class="stat-value" id="adm-alerts">2</div>
           <div class="stat-label">Inventory Alerts</div>
         </div>
+      </div>
+    </div>
+
+    <!-- STUDENT ARRIVAL & TOKEN CONFIRMATION DESK -->
+    <div class="card" style="border: 2px solid #f59e0b; margin-bottom: 1.5rem;">
+      <div class="card-header" style="background: #fffbeb;">
+        <div>
+          <h3 style="color: #92400e;"><span>📍</span> Student Arrival & Token Confirmation Desk</h3>
+          <p style="font-size: 0.8rem; color: #b45309; margin-top: 0.15rem;">
+            Confirm arriving students to admit their walk-in or scheduled tokens into the doctor's active queue.
+          </p>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="loadAdminArrivals()">🔄 Refresh Arrivals</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Token #</th>
+              <th>Student Name & Roll No</th>
+              <th>Department</th>
+              <th>Symptoms</th>
+              <th>Priority</th>
+              <th>Running Slot</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-awaiting-arrival-body">
+            <tr><td colspan="7" style="text-align:center; padding:1rem; color:#64748b;">Checking awaiting arrivals...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -256,7 +287,55 @@
   <script>
     async function initAdmin() {
       await loadDashboardStats();
+      await loadAdminArrivals();
       await loadUsers();
+      setInterval(loadAdminArrivals, 4000);
+      setInterval(loadDashboardStats, 6000);
+    }
+
+    async function loadAdminArrivals() {
+      try {
+        const q = await apiCall('/api/tokens/queue');
+        const awaiting = q.awaitingArrival || [];
+        const tbody = document.getElementById('admin-awaiting-arrival-body');
+
+        if (awaiting.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:1.25rem; color:#059669;">✅ No students currently awaiting arrival check-in. All arrived students admitted.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = awaiting.map(t => `
+          <tr>
+            <td><strong style="color:#8b0000; font-size:1rem;">#${t.tokenNumber}</strong></td>
+            <td><strong>${t.studentName}</strong><br><span style="font-size:0.75rem; color:#64748b;">Roll: ${t.studentRollNo}</span></td>
+            <td>${t.department}</td>
+            <td style="font-size:0.8rem; color:#334155;">${t.symptoms}</td>
+            <td>${getStatusBadge(t.priority)}</td>
+            <td><code style="background:#f1f5f9; padding:0.2rem 0.4rem; border-radius:4px;">${t.runningSlot || 'Running Slot'}</code></td>
+            <td>
+              <button class="btn btn-sm btn-success" style="font-weight:700;" onclick="confirmAdminArrival('${t.id}', '${t.tokenNumber}', '${t.studentName}')">
+                ✅ Confirm Arrival & Admit
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function confirmAdminArrival(tokenId, tokenNum, studentName) {
+      try {
+        const resp = await apiCall('/api/tokens/confirm-arrival', 'POST', {
+          tokenId: tokenId,
+          confirmedBy: 'Dr. Vikramjit Singh (Admin)'
+        });
+        showToast(resp.message || `Confirmed arrival for Token #${tokenNum} (${studentName})!`, 'success');
+        await loadAdminArrivals();
+        await loadDashboardStats();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
     }
 
     async function loadDashboardStats() {

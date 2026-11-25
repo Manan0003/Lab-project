@@ -28,6 +28,9 @@ public class AdminHandler implements HttpHandler {
         if ("/api/dashboard/statistics".equals(path) && "GET".equalsIgnoreCase(method)) {
             Map<String, Object> stats = adminService.getDashboardStatistics();
             HttpUtil.sendJsonResponse(exchange, 200, stats);
+        } else if ("/api/admin/reset-data".equals(path) && "POST".equalsIgnoreCase(method)) {
+            dataStore.resetToFactoryDefaults();
+            HttpUtil.sendSuccess(exchange, "All dispensary simulation data has been reset to starting state.", null);
         } else if ("/api/admin/users".equals(path)) {
             if ("GET".equalsIgnoreCase(method)) {
                 List<User> users = new ArrayList<>(dataStore.getUsers().values());
