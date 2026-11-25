@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard & Analytics - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .trend-bar-wrapper {
+      margin-bottom: 0.85rem;
+    }
+    .trend-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--secondary);
+    }
+    .trend-bar-bg {
+      background: #e2e8f0;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .trend-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8b0000 0%, #b91c1c 100%);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Chief Medical Superintendent & Administrator Portal</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Hub</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <a href="/receptionist.html" class="nav-link">📋 Reception</a>
+      <div class="user-badge" style="background:#fee2e2; color:#991b1b;">
+        <span>🛡️</span>
+        <span>Dr. Vikramjit Singh (Admin)</span>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="page-header">
+      <div class="page-title">
+        <h2>Dispensary Executive Dashboard & Reports</h2>
+        <p>Real-time analytics on patient visits, clinical illness trends, medicine usage, and audit trail</p>
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <button class="btn btn-secondary" onclick="exportDataBackup()">💾 Export System Data Backup</button>
+        <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Staff Account</button>
+      </div>
+    </div>
+
+    <!-- KPI STATS GRID -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef2f2; color:#8b0000;">👥</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-patients">4</div>
+          <div class="stat-label">Total Patients Registered</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff; color:#1d4ed8;">🩺</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-doctors">3</div>
+          <div class="stat-label">Medical Officers</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf4; color:#166534;">✅</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-completed">2</div>
+          <div class="stat-label">Completed Consultations</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fffbeb; color:#b45309;">🎫</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-pending-apts">3</div>
+          <div class="stat-label">Today's Appointments</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ecfdf5; color:#047857;">💊</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-meds">12</div>
+          <div class="stat-label">Medicine SKUs</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef2f2; color:#b91c1c;">⚠️</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adm-alerts">2</div>
+          <div class="stat-label">Inventory Alerts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS ROW -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+      <!-- COMMON ILLNESS & DIAGNOSIS TRENDS -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span>📊</span> Campus Illness & Diagnosis Trends</h3>
+          <span style="font-size:0.75rem; color:#64748b;">University Epidemiology</span>
+        </div>
+        <div class="card-body" id="disease-trends-container">
+          <!-- Rendered dynamically -->
+          <div class="trend-bar-wrapper">
+            <div class="trend-bar-header">
+              <span>Viral Fever / Pyrexia</span>
+              <span>45% (spikes during season change)</span>
+            </div>
+            <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: 45%;"></div></div>
+          </div>
+          <div class="trend-bar-wrapper">
+            <div class="trend-bar-header">
+              <span>Allergic Rhinitis / Dust Allergy</span>
+              <span>25%</span>
+            </div>
+            <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: 25%; background:#0284c7;"></div></div>
+          </div>
+          <div class="trend-bar-wrapper">
+            <div class="trend-bar-header">
+              <span>Sports Injuries & Sprains (Hostels/Gym)</span>
+              <span>20%</span>
+            </div>
+            <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: 20%; background:#d97706;"></div></div>
+          </div>
+          <div class="trend-bar-wrapper">
+            <div class="trend-bar-header">
+              <span>Gastritis / Acid Reflux</span>
+              <span>10%</span>
+            </div>
+            <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: 10%; background:#059669;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISPENSARY STAFF ACCOUNTS -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span>🔐</span> Authorized System Accounts & Roles</h3>
+          <button class="btn btn-sm btn-secondary" onclick="loadUsers()">🔄 Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="user-accounts-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AUDIT TRAIL LOG -->
+    <div class="card">
+      <div class="card-header">
+        <h3><span>📜</span> System Activity & Security Audit Trail</h3>
+        <span style="font-size:0.75rem; color:#64748b;">Tamper-evident operations log</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action Event</th>
+              <th>Operational Details</th>
+            </tr>
+          </thead>
+          <tbody id="audit-log-body">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ADD USER MODAL -->
+  <div id="add-user-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Create Dispensary Staff Account</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeAddUserModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-user-form" onsubmit="handleAddUserSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Username *</label>
+              <input type="text" id="new-user-username" class="form-control" placeholder="e.g. dr.harpreet" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="new-user-pass" class="form-control" placeholder="••••••••" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="new-user-fullname" class="form-control" placeholder="e.g. Dr. Harpreet Kaur" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select id="new-user-role" class="form-control">
+                <option value="DOCTOR">Medical Officer (Doctor)</option>
+                <option value="PHARMACIST">Dispensary Pharmacist</option>
+                <option value="RECEPTIONIST">Receptionist</option>
+                <option value="ADMIN">Dispensary Administrator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Official University Email</label>
+              <input type="email" id="new-user-email" class="form-control" placeholder="name@thapar.edu">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    async function initAdmin() {
+      await loadDashboardStats();
+      await loadUsers();
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const stats = await apiCall('/api/dashboard/statistics');
+        document.getElementById('adm-patients').innerText = stats.totalPatients || 4;
+        document.getElementById('adm-doctors').innerText = stats.totalDoctors || 3;
+        document.getElementById('adm-completed').innerText = stats.completedConsultations || 2;
+        document.getElementById('adm-pending-apts').innerText = stats.todayAppointments || 3;
+        document.getElementById('adm-meds').innerText = stats.totalMedicines || 12;
+        document.getElementById('adm-alerts').innerText = (stats.lowStockCount || 0) + (stats.expiringSoonCount || 0);
+
+        // Render audit logs
+        const logs = stats.recentActivities || [];
+        const tbody = document.getElementById('audit-log-body');
+        if (logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No recent activities logged.</td></tr>';
+        } else {
+          tbody.innerHTML = logs.map(l => `
+            <tr>
+              <td style="font-size:0.8rem; color:#64748b;">${l.timestamp}</td>
+              <td><strong>${l.user}</strong></td>
+              <td><span class="badge">${l.role}</span></td>
+              <td><code>${l.action}</code></td>
+              <td style="font-size:0.85rem;">${l.details}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const users = await apiCall('/api/admin/users');
+        const tbody = document.getElementById('user-accounts-body');
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td><code>${u.username}</code></td>
+            <td><strong>${u.fullName}</strong></td>
+            <td><span class="badge ${u.role === 'ADMIN' ? 'badge-urgent' : u.role === 'DOCTOR' ? 'badge-consultation' : 'badge-waiting'}">${u.role}</span></td>
+            <td style="font-size:0.8rem; color:#64748b;">${u.email || '-'}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function openAddUserModal() {
+      document.getElementById('add-user-modal').classList.add('active');
+    }
+    function closeAddUserModal() {
+      document.getElementById('add-user-modal').classList.remove('active');
+    }
+
+    async function handleAddUserSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        username: document.getElementById('new-user-username').value.trim(),
+        password: document.getElementById('new-user-pass').value.trim(),
+        fullName: document.getElementById('new-user-fullname').value.trim(),
+        role: document.getElementById('new-user-role').value,
+        email: document.getElementById('new-user-email').value.trim()
+      };
+
+      try {
+        await apiCall('/api/admin/users', 'POST', payload);
+        showToast('Staff account ' + payload.username + ' created successfully!', 'success');
+        closeAddUserModal();
+        await loadUsers();
+        await loadDashboardStats();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function exportDataBackup() {
+      try {
+        const stats = await apiCall('/api/dashboard/statistics');
+        const patients = await apiCall('/api/patients');
+        const medicines = await apiCall('/api/medicines');
+        const appointments = await apiCall('/api/appointments');
+        const prescriptions = await apiCall('/api/prescriptions');
+
+        const backup = {
+          exportDate: new Date().toISOString(),
+          university: "Thapar Institute of Engineering and Technology",
+          system: "Thapar University Dispensary Management System",
+          patients,
+          medicines,
+          appointments,
+          prescriptions,
+          stats
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `thapar_dispensary_backup_${new Date().toISOString().substring(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Dispensary database backup exported!', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>

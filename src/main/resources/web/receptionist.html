@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reception Desk - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .reception-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Front-Desk Reception & Patient Intake Desk</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Hub</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
+      <div class="user-badge" style="background:#fef3c7; color:#92400e;">
+        <span>📋</span>
+        <span>Mr. Gurpreet Singh (Reception Desk)</span>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="page-header">
+      <div class="page-title">
+        <h2>Dispensary Front-Desk Reception</h2>
+        <p>Register new student/staff patients, issue queue tokens, and schedule doctor consultations</p>
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <button class="btn btn-primary" onclick="openRegisterPatientModal()">+ Register New Patient</button>
+        <button class="btn btn-secondary" onclick="openWalkInTokenModal()">🎫 Issue Walk-in Token</button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO COLUMN GRID -->
+    <div class="reception-grid">
+
+      <!-- LEFT: REGISTERED PATIENTS DIRECTORY & SEARCH -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span>👥</span> Patient Directory</h3>
+          <input type="text" id="patient-search-input" class="form-control" placeholder="Search by name, roll no, dept..." style="width:240px;" oninput="handleSearchPatients()">
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Roll / Staff ID</th>
+                <th>Patient Name</th>
+                <th>Department</th>
+                <th>Blood</th>
+                <th>Emergency Contact</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="patient-list-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: TODAY'S APPOINTMENT SCHEDULE & STATUS -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span>📅</span> Today's Appointment Schedule</h3>
+          <button class="btn btn-sm btn-secondary" onclick="loadAppointments()">🔄 Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Token #</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+                <th>Update</th>
+              </tr>
+            </thead>
+            <tbody id="appointment-table-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- REGISTER PATIENT MODAL -->
+  <div id="register-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Register New Patient (Student / Staff)</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeRegisterModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="reg-patient-form" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Roll Number / Employee ID *</label>
+              <input type="text" id="reg-roll" class="form-control" placeholder="e.g. 102409876" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="reg-name" class="form-control" placeholder="e.g. Simranjit Kaur" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <select id="reg-dept" class="form-control">
+                <option value="Computer Science (CSED)">Computer Science (CSED)</option>
+                <option value="Electronics & Comm (ECED)">Electronics & Comm (ECED)</option>
+                <option value="Mechanical Engg (MED)">Mechanical Engg (MED)</option>
+                <option value="Chemical Engg (CHED)">Chemical Engg (CHED)</option>
+                <option value="Civil Engg (CED)">Civil Engg (CED)</option>
+                <option value="Biotechnology">Biotechnology</option>
+                <option value="Faculty / Admin Staff">Faculty / Admin Staff</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Academic Year</label>
+              <select id="reg-year" class="form-control">
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="Staff / Faculty">Staff / Faculty</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select id="reg-gender" class="form-control">
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age</label>
+              <input type="number" id="reg-age" class="form-control" value="19" min="16" max="90" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Blood Group</label>
+              <select id="reg-blood" class="form-control">
+                <option value="B+">B+</option>
+                <option value="O+">O+</option>
+                <option value="A+">A+</option>
+                <option value="AB+">AB+</option>
+                <option value="B-">B-</option>
+                <option value="O-">O-</option>
+                <option value="A-">A-</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Known Drug Allergies (Critical for Safety)</label>
+            <input type="text" id="reg-allergies" class="form-control" placeholder="e.g. Penicillin, Sulfa drugs, Aspirin (or None)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chronic Conditions</label>
+            <input type="text" id="reg-chronic" class="form-control" placeholder="e.g. Asthma, Diabetes, Hypertension (or None)">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Emergency Contact Name</label>
+              <input type="text" id="reg-emg-name" class="form-control" placeholder="e.g. Harpreet Singh (Father)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Emergency Phone Number</label>
+              <input type="text" id="reg-emg-phone" class="form-control" placeholder="+91 98765 00000">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Complete Patient Registration</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALK-IN TOKEN MODAL -->
+  <div id="walkin-token-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Issue Walk-in Queue Token</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeWalkInTokenModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="walkin-form" onsubmit="handleWalkInSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Patient University Roll Number *</label>
+            <input type="text" id="walkin-roll" class="form-control" placeholder="e.g. 102103456" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reported Symptoms</label>
+            <input type="text" id="walkin-symptoms" class="form-control" placeholder="e.g. Sudden dizziness, minor cut, headache" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Triage Priority</label>
+            <select id="walkin-priority" class="form-control">
+              <option value="NORMAL">Normal Queue</option>
+              <option value="URGENT">Urgent (High fever, acute pain)</option>
+              <option value="EMERGENCY">Emergency (Immediate attention)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Issue Queue Token Now</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let allPatients = [];
+
+    async function initReception() {
+      await loadPatients();
+      await loadAppointments();
+      setInterval(loadAppointments, 5000);
+    }
+
+    async function loadPatients() {
+      try {
+        allPatients = await apiCall('/api/patients');
+        renderPatients(allPatients);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderPatients(list) {
+      const tbody = document.getElementById('patient-list-body');
+      tbody.innerHTML = list.map(p => `
+        <tr>
+          <td><code>${p.rollNo}</code></td>
+          <td><strong>${p.name}</strong></td>
+          <td style="font-size:0.8rem; color:#64748b;">${p.department}</td>
+          <td><span class="badge badge-urgent" style="font-size:0.75rem;">${p.bloodGroup}</span></td>
+          <td style="font-size:0.8rem;">${p.emergencyContactName || '-'} (${p.emergencyPhone || '-'})</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="quickIssueTokenFor('${p.rollNo}')">🎫 Token</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleSearchPatients() {
+      const q = document.getElementById('patient-search-input').value.toLowerCase().trim();
+      const filtered = allPatients.filter(p => 
+        p.rollNo.toLowerCase().includes(q) || 
+        p.name.toLowerCase().includes(q) || 
+        p.department.toLowerCase().includes(q)
+      );
+      renderPatients(filtered);
+    }
+
+    async function loadAppointments() {
+      try {
+        const apts = await apiCall('/api/appointments');
+        const tbody = document.getElementById('appointment-table-body');
+        if (apts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">No appointments scheduled today.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = apts.map(a => `
+          <tr>
+            <td><strong style="color:#8b0000;">#${a.tokenNumber}</strong></td>
+            <td><strong>${a.patientName}</strong><br><span style="font-size:0.75rem; color:#64748b;">${a.patientRollNo}</span></td>
+            <td>${a.doctorName}</td>
+            <td style="font-size:0.8rem;">${a.appointmentDate}<br>${a.timeSlot}</td>
+            <td>${getStatusBadge(a.status)}</td>
+            <td>
+              ${a.status === 'Pending' ? `
+                <button class="btn btn-sm btn-success" style="padding:0.2rem 0.5rem;" onclick="updateAptStatus('${a.id}', 'Confirmed')">Confirm</button>
+              ` : ''}
+              ${a.status !== 'Cancelled' && a.status !== 'Completed' ? `
+                <button class="btn btn-sm btn-danger" style="padding:0.2rem 0.5rem;" onclick="updateAptStatus('${a.id}', 'Cancelled')">Cancel</button>
+              ` : '-'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function updateAptStatus(id, status) {
+      try {
+        await apiCall('/api/appointments/status', 'PUT', { id, status });
+        showToast('Appointment marked as ' + status, 'success');
+        await loadAppointments();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openRegisterPatientModal() {
+      document.getElementById('register-modal').classList.add('active');
+    }
+    function closeRegisterModal() {
+      document.getElementById('register-modal').classList.remove('active');
+    }
+
+    function openWalkInTokenModal() {
+      document.getElementById('walkin-token-modal').classList.add('active');
+    }
+    function closeWalkInTokenModal() {
+      document.getElementById('walkin-token-modal').classList.remove('active');
+    }
+
+    function quickIssueTokenFor(rollNo) {
+      document.getElementById('walkin-roll').value = rollNo;
+      openWalkInTokenModal();
+    }
+
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        rollNo: document.getElementById('reg-roll').value.trim(),
+        name: document.getElementById('reg-name').value.trim(),
+        department: document.getElementById('reg-dept').value,
+        year: document.getElementById('reg-year').value,
+        gender: document.getElementById('reg-gender').value,
+        age: parseInt(document.getElementById('reg-age').value),
+        bloodGroup: document.getElementById('reg-blood').value,
+        allergies: document.getElementById('reg-allergies').value,
+        chronicConditions: document.getElementById('reg-chronic').value,
+        emergencyContactName: document.getElementById('reg-emg-name').value,
+        emergencyPhone: document.getElementById('reg-emg-phone').value,
+        phone: '+91 98765 00000',
+        email: document.getElementById('reg-roll').value.trim() + '@thapar.edu'
+      };
+
+      try {
+        await apiCall('/api/patients', 'POST', payload);
+        showToast('Patient ' + payload.name + ' registered successfully!', 'success');
+        closeRegisterModal();
+        await loadPatients();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleWalkInSubmit(e) {
+      e.preventDefault();
+      const roll = document.getElementById('walkin-roll').value.trim();
+      const sym = document.getElementById('walkin-symptoms').value.trim();
+      const prio = document.getElementById('walkin-priority').value;
+
+      try {
+        const resp = await apiCall('/api/tokens', 'POST', {
+          studentRollNo: roll,
+          symptoms: sym,
+          priority: prio
+        });
+        showToast('Issued Token #' + resp.data.tokenNumber + ' to queue!', 'success');
+        closeWalkInTokenModal();
+        await loadAppointments();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    initReception();
+  </script>
+</body>
+</html>

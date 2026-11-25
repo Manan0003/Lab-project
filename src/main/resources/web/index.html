@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thapar University Dispensary Management System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .hero-banner {
+      background: linear-gradient(135deg, #7a0c14 0%, #8b0000 50%, #4a0404 100%);
+      color: white;
+      padding: 3rem 2rem;
+      border-radius: var(--radius);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-banner::after {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 250px;
+      height: 250px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+    .portal-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .portal-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .portal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+    .portal-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .portal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .portal-card h3 {
+      font-size: 1.15rem;
+      color: var(--secondary);
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+    }
+    .portal-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+    }
+    .emergency-strip {
+      background: #fff1f2;
+      border-left: 4px solid #e11d48;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Campus Health Care & Dispensary Management System</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor Chamber</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <a href="/receptionist.html" class="nav-link">📋 Reception</a>
+      <a href="/admin.html" class="nav-link">🛡️ Admin</a>
+      <button class="btn btn-sm btn-secondary" onclick="openLoginModal()">Login</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- EMERGENCY CONTACT STRIP -->
+    <div class="emergency-strip">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span style="font-size:1.6rem;">🚑</span>
+        <div>
+          <strong style="color:#9f1239;">24x7 Campus Emergency & Ambulance Dispatch</strong>
+          <p style="font-size:0.8rem; color:#be123c;">Dispensary Building, Opp. Hostel PG | Ext: 3099 | Ambulance: +91 98150 99999</p>
+        </div>
+      </div>
+      <div>
+        <a href="tel:+919815099999" class="btn btn-sm btn-danger">Call Ambulance Now</a>
+      </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <div class="hero-banner">
+      <div style="max-width: 700px;">
+        <span class="badge" style="background:rgba(255,255,255,0.2); color:white; margin-bottom:0.75rem;">TIET Patiala · Health Care Unit</span>
+        <h2 style="font-size:2.2rem; font-weight:800; line-height:1.2; margin-bottom:0.75rem;">Centralised University Healthcare & Dispensary Platform</h2>
+        <p style="font-size:0.95rem; opacity:0.9; line-height:1.5; margin-bottom:1.5rem;">
+          Eliminating paper registers through end-to-end automation: student token booking, live doctor PC consultation, electronic prescriptions, and real-time medicine inventory stock deduction.
+        </p>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <a href="/student.html" class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;">🎓 Book Appointment / Token</a>
+          <a href="/doctor.html" class="btn" style="background:white; color:#8b0000; font-weight:700;">🩺 Open Doctor Consultation PC</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE METRICS BAR -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef2f2; color:#8b0000;">👥</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-patients">4</div>
+          <div class="stat-label">Registered Patients</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff; color:#1d4ed8;">🩺</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-doctors">3</div>
+          <div class="stat-label">On-Duty Doctors</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fffbeb; color:#b45309;">🎫</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-waiting">2</div>
+          <div class="stat-label">Active Queue Tokens</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ecfdf5; color:#047857;">💊</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-medicines">12</div>
+          <div class="stat-label">Medicines Cataloged</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 ROLE PORTALS (ONE-CLICK LAUNCH) -->
+    <div class="page-title">
+      <h2>Role-Based Portals</h2>
+      <p>Select your authorized role to enter the dispensary system or use 1-click demo access</p>
+    </div>
+
+    <div class="portal-cards">
+
+      <!-- 1. STUDENT PORTAL -->
+      <div class="portal-card" onclick="quickLogin('102103456', 'student123', '/student.html')">
+        <span class="portal-badge">Student / Staff</span>
+        <div class="portal-icon">🎓</div>
+        <h3>Student Portal</h3>
+        <p>Book doctor appointments, generate queue tokens, track wait time, download digital prescriptions & sick leave certificates.</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Student (Aarav Patel)</button>
+      </div>
+
+      <!-- 2. DOCTOR PORTAL -->
+      <div class="portal-card" onclick="quickLogin('doctor', 'doctor123', '/doctor.html')">
+        <span class="portal-badge">Medical Officer</span>
+        <div class="portal-icon">🩺</div>
+        <h3>Doctor Chamber PC</h3>
+        <p>Receive student details on PC, view drug allergy alerts, record diagnosis & vitals, and issue digital prescriptions directly to Pharmacy.</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Dr. Ananya Sharma</button>
+      </div>
+
+      <!-- 3. INVENTORY & PHARMACY -->
+      <div class="portal-card" onclick="quickLogin('pharma', 'pharma123', '/inventory.html')">
+        <span class="portal-badge">Pharmacy Desk</span>
+        <div class="portal-icon">💊</div>
+        <h3>Medicine Inventory</h3>
+        <p>Live stock tracking, low-stock & expiry monitoring, inward restock, and 1-click dispensing with auto-deduction (e.g. 200 - 12 = 188).</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Pharmacist (Rakesh)</button>
+      </div>
+
+      <!-- 4. RECEPTIONIST -->
+      <div class="portal-card" onclick="quickLogin('reception', 'reception123', '/receptionist.html')">
+        <span class="portal-badge">Front Desk</span>
+        <div class="portal-icon">📋</div>
+        <h3>Reception Desk</h3>
+        <p>Fast patient registration with roll number & emergency contact, walk-in token issuance, doctor schedule management.</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Receptionist (Gurpreet)</button>
+      </div>
+
+      <!-- 5. ADMIN -->
+      <div class="portal-card" onclick="quickLogin('admin', 'admin123', '/admin.html')">
+        <span class="portal-badge">Superintendent</span>
+        <div class="portal-icon">🛡️</div>
+        <h3>Admin & Analytics</h3>
+        <p>Executive KPIs, disease/symptom distribution trends, user account administration, and complete audit activity logging.</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;">Enter as Chief Administrator</button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Dispensary Portal Sign In</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeLoginModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="custom-login-form" onsubmit="handleFormLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Username / Student Roll No</label>
+            <input type="text" id="login-username" class="form-control" placeholder="e.g. 102103456 or doctor or admin" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Sign In to Dispensary</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const stats = await apiCall('/api/dashboard/statistics');
+        document.getElementById('kpi-patients').innerText = stats.totalPatients || 4;
+        document.getElementById('kpi-doctors').innerText = stats.totalDoctors || 3;
+        document.getElementById('kpi-waiting').innerText = stats.waitingTokens || 2;
+        document.getElementById('kpi-medicines').innerText = stats.totalMedicines || 12;
+      } catch (e) {
+        console.log('Using default mock stats');
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.add('active');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.remove('active');
+    }
+
+    async function handleFormLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value;
+      const p = document.getElementById('login-password').value;
+      try {
+        const resp = await apiCall('/api/auth/login', 'POST', { username: u, password: p });
+        if (resp.success && resp.data) {
+          setCurrentUser(resp.data.token, resp.data.user);
+          showToast('Login successful!', 'success');
+          closeLoginModal();
+          const role = resp.data.user.role;
+          if (role === 'DOCTOR') window.location.href = '/doctor.html';
+          else if (role === 'PHARMACIST') window.location.href = '/inventory.html';
+          else if (role === 'RECEPTIONIST') window.location.href = '/receptionist.html';
+          else if (role === 'ADMIN') window.location.href = '/admin.html';
+          else window.location.href = '/student.html';
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>

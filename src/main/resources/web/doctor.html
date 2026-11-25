@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Chamber PC - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .doctor-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .queue-item {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .queue-item:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .queue-item.active {
+      border: 2px solid var(--primary);
+      background: var(--primary-light);
+    }
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+    }
+    .rx-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+    .rx-table th, .rx-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Medical Officer PC Consultation Workstation</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Hub</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
+      <div class="user-badge" style="background:#eff6ff; color:#1d4ed8;">
+        <span>🩺</span>
+        <span id="doc-badge-name">Dr. Ananya Sharma (Chamber 1)</span>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="doctor-layout">
+
+      <!-- LEFT SIDEBAR: LIVE PATIENT QUEUE -->
+      <div>
+        <div class="card">
+          <div class="card-header" style="background:#f8fafc;">
+            <h3><span>🎫</span> Live Patient Queue</h3>
+            <span class="badge badge-waiting" id="queue-count-badge">0 Waiting</span>
+          </div>
+          <div class="card-body" style="padding:1rem;">
+            <button class="btn btn-primary" style="width:100%; margin-bottom:1rem; font-weight:700;" onclick="callNextPatient()">
+              📢 Call Next Patient in Queue
+            </button>
+
+            <div id="queue-list-container">
+              <p style="font-size:0.85rem; color:#64748b; text-align:center; padding:1rem;">Loading queue...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT CONSULTATIONS TODAY -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:0.95rem;"><span>✅</span> Consultations Done Today</h3>
+          </div>
+          <div class="card-body" style="padding:0.75rem;" id="recent-done-list">
+            <p style="font-size:0.82rem; color:#64748b;">Loading completed visits...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: CONSULTATION WORKSTATION -->
+      <div>
+
+        <!-- EMPTY STATE (NO PATIENT SELECTED) -->
+        <div id="no-patient-selected" class="card" style="text-align:center; padding:4rem 2rem;">
+          <div style="font-size:4rem; margin-bottom:1rem;">🖥️</div>
+          <h2 style="color:#0f172a; margin-bottom:0.5rem;">Doctor Consultation Chamber Ready</h2>
+          <p style="color:#64748b; max-width:480px; margin:0 auto 1.5rem auto; font-size:0.95rem;">
+            Click <strong>"Call Next Patient in Queue"</strong> or select a student token from the left queue to immediately pull up their full medical profile, drug allergy alerts, and previous prescriptions.
+          </p>
+          <button class="btn btn-primary" onclick="callNextPatient()">Call Next Patient Now</button>
+        </div>
+
+        <!-- ACTIVE PATIENT CONSULTATION PANEL -->
+        <div id="patient-consultation-panel" style="display:none;">
+
+          <!-- PATIENT DETAILS CARD (RECEIVED ON PC) -->
+          <div class="card">
+            <div class="card-header" style="background:#f8fafc;">
+              <div>
+                <span class="badge badge-consultation" id="doc-active-token-badge">TOKEN #101 · IN CONSULTATION</span>
+                <h3 style="font-size:1.35rem; margin-top:0.35rem; color:#0f172a;" id="doc-patient-name">Aarav Patel</h3>
+                <p style="font-size:0.85rem; color:#64748b;" id="doc-patient-meta">Roll No: 102103456 | Computer Science (CSED) | 3rd Year · Age: 20 · Gender: Male</p>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.8rem; color:#64748b;">Blood Group</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#8b0000;" id="doc-patient-blood">B+</div>
+              </div>
+            </div>
+
+            <!-- PROMINENT DRUG ALLERGY WARNING BANNER -->
+            <div class="allergy-alert danger">
+              <div class="allergy-icon">⚠️</div>
+              <div class="allergy-text">
+                <h4>PATIENT DRUG ALLERGIES & MEDICAL ALERTS</h4>
+                <p id="doc-patient-allergies">Penicillin, Amoxicillin | Chronic Conditions: Mild Asthma</p>
+                <p style="font-size:0.75rem; color:#9f1239; margin-top:0.25rem;">
+                  * Contraindicated medicines will be flagged to prevent adverse allergic drug reactions.
+                </p>
+              </div>
+            </div>
+
+            <div class="card-body">
+
+              <!-- CHIEF COMPLAINTS -->
+              <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:0.85rem; margin-bottom:1.25rem;">
+                <strong style="color:#92400e; font-size:0.85rem;">Chief Complaints Reported by Student:</strong>
+                <p style="font-size:0.9rem; color:#78350f; margin-top:0.2rem;" id="doc-patient-symptoms">High fever (101°F), severe body ache, shivering since last night</p>
+              </div>
+
+              <!-- VITALS INPUTS -->
+              <h4 style="font-size:0.95rem; margin-bottom:0.6rem; color:#0f172a;">1. Patient Vitals</h4>
+              <div class="vitals-grid">
+                <div>
+                  <label class="form-label">Blood Pressure</label>
+                  <input type="text" id="vital-bp" class="form-control" value="120/80 mmHg" placeholder="120/80 mmHg">
+                </div>
+                <div>
+                  <label class="form-label">Temperature</label>
+                  <input type="text" id="vital-temp" class="form-control" value="100.8 °F" placeholder="98.6 °F">
+                </div>
+                <div>
+                  <label class="form-label">Pulse Rate</label>
+                  <input type="text" id="vital-pulse" class="form-control" value="84 bpm" placeholder="72 bpm">
+                </div>
+                <div>
+                  <label class="form-label">Body Weight</label>
+                  <input type="text" id="vital-weight" class="form-control" value="66 kg" placeholder="65 kg">
+                </div>
+              </div>
+
+              <!-- CLINICAL FINDINGS & DIAGNOSIS -->
+              <h4 style="font-size:0.95rem; margin-bottom:0.6rem; color:#0f172a;">2. Clinical Findings & Diagnosis</h4>
+              <div class="form-row">
+                <div class="form-group" style="grid-column: span 2;">
+                  <label class="form-label">Primary Diagnosis *</label>
+                  <input type="text" id="doc-diagnosis" class="form-control" placeholder="e.g. Acute Viral Pyrexia with upper respiratory symptoms" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Clinical Observations & Doctor Notes</label>
+                <textarea id="doc-notes" class="form-control" rows="2" placeholder="Throat congested, chest clear, adequate hydration advised. Strictly avoid Penicillin derivatives."></textarea>
+              </div>
+
+              <!-- INTERACTIVE E-PRESCRIPTION BUILDER -->
+              <div style="border-top:1px solid #e2e8f0; padding-top:1.25rem; margin-top:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                  <h4 style="font-size:0.95rem; color:#0f172a;">3. Prescribe Medicines (From Live Dispensary Stock)</h4>
+                  <span style="font-size:0.8rem; color:#64748b;">Deducted automatically at pharmacy desk</span>
+                </div>
+
+                <!-- ADD MEDICINE FORM ROW -->
+                <div style="background:#f1f5f9; padding:0.85rem; border-radius:8px; display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:0.6rem; align-items:end;">
+                  <div>
+                    <label class="form-label" style="font-size:0.75rem;">Medicine (Live Stock)</label>
+                    <select id="rx-med-select" class="form-control" style="font-size:0.82rem;">
+                      <option value="">-- Choose Medicine --</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size:0.75rem;">Dosage</label>
+                    <input type="text" id="rx-dosage" class="form-control" placeholder="1-0-1 After food" value="1-0-1 (After Food)" style="font-size:0.82rem;">
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size:0.75rem;">Duration</label>
+                    <input type="text" id="rx-duration" class="form-control" placeholder="3 Days" value="3 Days" style="font-size:0.82rem;">
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size:0.75rem;">Qty</label>
+                    <input type="number" id="rx-qty" class="form-control" value="6" min="1" style="font-size:0.82rem;">
+                  </div>
+                  <div>
+                    <button class="btn btn-sm btn-primary" type="button" onclick="addMedicineToPrescription()">+ Add</button>
+                  </div>
+                </div>
+
+                <!-- PRESCRIBED MEDICINES LIST -->
+                <table class="rx-table" id="rx-items-table">
+                  <thead>
+                    <tr>
+                      <th>Medicine Name</th>
+                      <th>Dosage</th>
+                      <th>Duration</th>
+                      <th>Qty</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rx-items-body">
+                    <!-- Added medicines render here -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- SICK LEAVE / MEDICAL REST SLIP -->
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:1rem; margin-top:1.25rem;">
+                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:700; cursor:pointer; color:#0f172a; font-size:0.9rem;">
+                  <input type="checkbox" id="sick-leave-check" onchange="toggleSickLeaveFields()">
+                  Recommend Official University Sick Leave / Medical Rest Slip
+                </label>
+                <div id="sick-leave-fields" style="display:none; margin-top:0.85rem;">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Recommended Rest Days</label>
+                      <input type="number" id="sick-days" class="form-control" value="2" min="1" max="14">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Rest From</label>
+                      <input type="date" id="sick-from" class="form-control">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Rest Until</label>
+                      <input type="date" id="sick-to" class="form-control">
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Medical Advice for Department / Hostel Warden</label>
+                    <input type="text" id="sick-advice" class="form-control" value="Complete bed rest and high fluid intake recommended.">
+                  </div>
+                </div>
+              </div>
+
+              <!-- SUBMIT BUTTONS -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1.25rem;">
+                <button class="btn btn-secondary" onclick="viewPatientPastHistory()">📜 View Full Past History</button>
+                <div style="display:flex; gap:0.75rem;">
+                  <button class="btn btn-secondary" onclick="cancelCurrentConsultation()">Cancel / Skip</button>
+                  <button class="btn btn-success" style="font-size:0.95rem; font-weight:700;" onclick="submitCompleteConsultation()">
+                    ✅ Complete Consultation & Send to Pharmacy Desk
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let activeToken = null;
+    let activePatient = null;
+    let availableMedicines = [];
+    let prescriptionItems = [];
+
+    async function initDoctorPortal() {
+      const today = new Date().toISOString().substring(0, 10);
+      document.getElementById('sick-from').value = today;
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 2);
+      document.getElementById('sick-to').value = tomorrow.toISOString().substring(0, 10);
+
+      await loadMedicinesCatalog();
+      await refreshQueue();
+      await loadRecentConsultations();
+      setInterval(refreshQueue, 5000); // 5 sec live poll
+    }
+
+    async function loadMedicinesCatalog() {
+      try {
+        availableMedicines = await apiCall('/api/medicines');
+        const sel = document.getElementById('rx-med-select');
+        sel.innerHTML = '<option value="">-- Choose Medicine --</option>' +
+          availableMedicines.map(m => `
+            <option value="${m.id}" data-name="${m.name}" data-stock="${m.stockQuantity}" data-guide="${m.dosageGuide || ''}">
+              ${m.name} (${m.stockQuantity} ${m.unit} in stock) - ${m.category}
+            </option>
+          `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function refreshQueue() {
+      try {
+        const q = await apiCall('/api/tokens/queue');
+        const waiting = q.waitingQueue || [];
+        document.getElementById('queue-count-badge').innerText = `${waiting.length} Waiting`;
+
+        const container = document.getElementById('queue-list-container');
+        if (waiting.length === 0) {
+          container.innerHTML = '<p style="font-size:0.85rem; color:#64748b; text-align:center; padding:1rem;">No patients waiting in queue.</p>';
+        } else {
+          container.innerHTML = waiting.map(t => {
+            const isSelected = activeToken && activeToken.id === t.id;
+            return `
+              <div class="queue-item ${isSelected ? 'active' : ''}" onclick="selectToken('${t.id}')">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong style="color:#0f172a; font-size:0.95rem;">Token #${t.tokenNumber}</strong>
+                  ${getStatusBadge(t.priority)}
+                </div>
+                <div style="font-weight:600; font-size:0.88rem; color:#8b0000; margin-top:0.2rem;">${t.studentName}</div>
+                <div style="font-size:0.78rem; color:#64748b;">Roll: ${t.studentRollNo} · ${t.department}</div>
+                <div style="font-size:0.75rem; color:#475569; margin-top:0.25rem;">Complaints: ${t.symptoms}</div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // If a consultation is in progress, update active display if not already loaded
+        if (q.currentConsultation && (!activeToken || activeToken.id !== q.currentConsultation.id)) {
+          selectToken(q.currentConsultation.id);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    async function callNextPatient() {
+      try {
+        const resp = await apiCall('/api/doctor/call-token', 'POST', {
+          doctorName: 'Dr. Ananya Sharma (MD)'
+        });
+        showToast('Called ' + resp.data.studentName + ' (Token #' + resp.data.tokenNumber + ') into chamber!', 'success');
+        selectToken(resp.data.id);
+      } catch (err) {
+        showToast(err.message, 'warning');
+      }
+    }
+
+    async function selectToken(tokenId) {
+      try {
+        const allTokens = await apiCall('/api/tokens');
+        activeToken = allTokens.find(t => t.id === tokenId);
+        if (!activeToken) return;
+
+        // Fetch patient consultation details from backend
+        const details = await apiCall('/api/doctor/patient-details?rollNo=' + activeToken.studentRollNo);
+        activePatient = details.student;
+
+        // Populate PC Consultation Screen
+        document.getElementById('no-patient-selected').style.display = 'none';
+        document.getElementById('patient-consultation-panel').style.display = 'block';
+
+        document.getElementById('doc-active-token-badge').innerText = `TOKEN #${activeToken.tokenNumber} · IN CONSULTATION`;
+        document.getElementById('doc-patient-name').innerText = activePatient.name;
+        document.getElementById('doc-patient-meta').innerText = `Roll No: ${activePatient.rollNo} | ${activePatient.department} | ${activePatient.year} · Age: ${activePatient.age} · Gender: ${activePatient.gender}`;
+        document.getElementById('doc-patient-blood').innerText = activePatient.bloodGroup || 'Unknown';
+        document.getElementById('doc-patient-allergies').innerText = `${activePatient.allergies || 'None Reported'} | Chronic Conditions: ${activePatient.chronicConditions || 'None Reported'}`;
+        document.getElementById('doc-patient-symptoms').innerText = activeToken.symptoms || 'General consultation';
+
+        // Pre-fill diagnosis suggestion based on complaints
+        document.getElementById('doc-diagnosis').value = activeToken.symptoms.toLowerCase().includes('fever') 
+          ? 'Viral Pyrexia with upper respiratory symptoms' 
+          : (activeToken.symptoms.toLowerCase().includes('ankle') || activeToken.symptoms.toLowerCase().includes('sprain'))
+          ? 'Acute Ligament Sprain with localized edema'
+          : 'General Clinical Evaluation';
+
+        // Default prescribed items
+        prescriptionItems = [];
+        if (activeToken.symptoms.toLowerCase().includes('fever')) {
+          prescriptionItems.push({
+            medicineId: 'MED-001',
+            medicineName: 'Paracetamol 500mg',
+            dosage: '1-0-1 (After Food)',
+            duration: '3 Days',
+            quantity: 6,
+            instructions: 'Take after meals with lukewarm water'
+          });
+        }
+        renderPrescriptionItems();
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function addMedicineToPrescription() {
+      const sel = document.getElementById('rx-med-select');
+      const medId = sel.value;
+      if (!medId) {
+        showToast('Please select a medicine first', 'warning');
+        return;
+      }
+      const opt = sel.options[sel.selectedIndex];
+      const name = opt.getAttribute('data-name');
+      const stock = parseInt(opt.getAttribute('data-stock') || '0');
+      const dosage = document.getElementById('rx-dosage').value || '1-0-1';
+      const duration = document.getElementById('rx-duration').value || '3 Days';
+      const qty = parseInt(document.getElementById('rx-qty').value || '6');
+
+      // Drug allergy safety alert!
+      if (activePatient && activePatient.allergies) {
+        const allergies = activePatient.allergies.toLowerCase();
+        if ((name.toLowerCase().includes('penicillin') || name.toLowerCase().includes('amoxicillin')) && allergies.includes('penicillin')) {
+          if (!confirm(`🚨 CRITICAL ALLERGY WARNING:\n${activePatient.name} has a recorded allergy to PENICILLIN!\nAre you sure you want to prescribe this?`)) {
+            return;
+          }
+        }
+      }
+
+      if (qty > stock) {
+        showToast(`Stock warning: Only ${stock} units available in pharmacy!`, 'warning');
+      }
+
+      prescriptionItems.push({
+        medicineId: medId,
+        medicineName: name,
+        dosage: dosage,
+        duration: duration,
+        quantity: qty,
+        instructions: opt.getAttribute('data-guide') || 'Take as advised'
+      });
+
+      renderPrescriptionItems();
+      sel.value = '';
+    }
+
+    function removeRxItem(idx) {
+      prescriptionItems.splice(idx, 1);
+      renderPrescriptionItems();
+    }
+
+    function renderPrescriptionItems() {
+      const tbody = document.getElementById('rx-items-body');
+      if (prescriptionItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">No medicines added yet. Select from the dropdown above.</td></tr>';
+      } else {
+        tbody.innerHTML = prescriptionItems.map((item, idx) => `
+          <tr>
+            <td><strong>${item.medicineName}</strong></td>
+            <td>${item.dosage}</td>
+            <td>${item.duration}</td>
+            <td>${item.quantity}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" style="padding:0.2rem 0.5rem;" onclick="removeRxItem(${idx})">✕</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function toggleSickLeaveFields() {
+      const checked = document.getElementById('sick-leave-check').checked;
+      document.getElementById('sick-leave-fields').style.display = checked ? 'block' : 'none';
+    }
+
+    async function submitCompleteConsultation() {
+      const diag = document.getElementById('doc-diagnosis').value.trim();
+      if (!diag) {
+        showToast('Please enter a diagnosis', 'warning');
+        return;
+      }
+
+      const sickLeave = document.getElementById('sick-leave-check').checked;
+
+      const payload = {
+        tokenId: activeToken ? activeToken.id : '',
+        studentRollNo: activePatient.rollNo,
+        studentName: activePatient.name,
+        doctorName: 'Dr. Ananya Sharma (MD)',
+        bloodPressure: document.getElementById('vital-bp').value,
+        temperature: document.getElementById('vital-temp').value,
+        pulse: document.getElementById('vital-pulse').value,
+        weight: document.getElementById('vital-weight').value,
+        symptoms: document.getElementById('doc-patient-symptoms').innerText,
+        diagnosis: diag,
+        clinicalNotes: document.getElementById('doc-notes').value,
+        items: prescriptionItems,
+        sickLeaveIssued: sickLeave,
+        sickLeaveDays: sickLeave ? parseInt(document.getElementById('sick-days').value || '1') : 0,
+        sickLeaveFrom: sickLeave ? document.getElementById('sick-from').value : '',
+        sickLeaveTo: sickLeave ? document.getElementById('sick-to').value : '',
+        sickLeaveAdvice: sickLeave ? document.getElementById('sick-advice').value : ''
+      };
+
+      try {
+        const resp = await apiCall('/api/doctor/consultations', 'POST', payload);
+        showToast('Consultation saved & forwarded to Pharmacy for dispensing!', 'success');
+        
+        // Show printable slip modal right away for doctor
+        showPrescriptionSlip(resp.data);
+
+        // Reset view
+        activeToken = null;
+        activePatient = null;
+        document.getElementById('patient-consultation-panel').style.display = 'none';
+        document.getElementById('no-patient-selected').style.display = 'block';
+
+        await refreshQueue();
+        await loadRecentConsultations();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function loadRecentConsultations() {
+      try {
+        const list = await apiCall('/api/prescriptions');
+        const container = document.getElementById('recent-done-list');
+        if (list.length === 0) {
+          container.innerHTML = '<p style="font-size:0.82rem; color:#64748b;">No consultations yet.</p>';
+        } else {
+          container.innerHTML = list.slice(0, 5).map(p => `
+            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:0.5rem; margin-bottom:0.5rem; font-size:0.82rem;">
+              <div style="font-weight:700; color:#0f172a;">${p.studentName} (${p.studentRollNo})</div>
+              <div style="color:#8b0000;">${p.diagnosis}</div>
+              <div style="font-size:0.75rem; color:#64748b;">${p.date} · ${p.status}</div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    async function viewPatientPastHistory() {
+      if (!activePatient) return;
+      const details = await apiCall('/api/doctor/patient-details?rollNo=' + activePatient.rollNo);
+      const past = details.pastPrescriptions || [];
+      if (past.length === 0) {
+        alert('No previous consultations on record for ' + activePatient.name);
+      } else {
+        showPrescriptionSlip(past[0]);
+      }
+    }
+
+    function cancelCurrentConsultation() {
+      if (confirm('Cancel and return to queue?')) {
+        activeToken = null;
+        activePatient = null;
+        document.getElementById('patient-consultation-panel').style.display = 'none';
+        document.getElementById('no-patient-selected').style.display = 'block';
+      }
+    }
+
+    initDoctorPortal();
+  </script>
+</body>
+</html>

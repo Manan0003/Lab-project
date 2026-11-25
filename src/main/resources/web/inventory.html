@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicine Inventory & Pharmacy - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      font-size: 0.88rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .stock-badge {
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+    .stock-ok { background: #ecfdf5; color: #047857; }
+    .stock-low { background: #fffbeb; color: #b45309; }
+    .stock-zero { background: #fef2f2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Medicine Inventory & Pharmacy Dispensing Desk</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Hub</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
+      <a href="/student.html" class="nav-link">🎓 Student Portal</a>
+      <div class="user-badge" style="background:#ecfdf5; color:#047857;">
+        <span>💊</span>
+        <span id="pharma-badge-name">Mr. Rakesh Verma (Chief Pharmacist)</span>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- KPI STATS CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ecfdf5; color:#047857;">📦</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-total-meds">12</div>
+          <div class="stat-label">Active Medicine SKUs</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff; color:#1d4ed8;">📋</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-pending-rx">1</div>
+          <div class="stat-label">Pending Prescriptions</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fffbeb; color:#b45309;">⚠️</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-low-stock">2</div>
+          <div class="stat-label">Low Stock Alerts</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef2f2; color:#b91c1c;">⏳</div>
+        <div class="stat-info">
+          <div class="stat-value" id="kpi-expiring-soon">1</div>
+          <div class="stat-label">Expiring Within 60 Days</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('tab-pending', this)">
+        📥 Pending Doctor Prescriptions <span class="badge badge-waiting" id="badge-pending-count" style="margin-left:0.4rem;">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-inventory', this)">
+        💊 Medicine Stock Catalog
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-alerts', this)">
+        🚨 Stock & Expiry Alerts
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-history', this)">
+        📜 Dispensing History & Audit Log
+      </button>
+    </div>
+
+    <!-- TAB 1: PENDING DOCTOR PRESCRIPTIONS -->
+    <div id="tab-pending" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3><span>📥</span> Prescriptions Awaiting Pharmacy Dispensing</h3>
+          <button class="btn btn-sm btn-secondary" onclick="loadPendingPrescriptions()">🔄 Refresh Prescriptions</button>
+        </div>
+        <div class="card-body" id="pending-rx-container">
+          <!-- Pending prescription cards loaded dynamically -->
+          <p style="color:#64748b; font-size:0.88rem;">Loading pending prescriptions...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MEDICINE STOCK CATALOG -->
+    <div id="tab-inventory" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <h3><span>💊</span> University Medicine Stock Catalog</h3>
+          <div style="display:flex; gap:0.75rem;">
+            <input type="text" id="med-search" class="form-control" placeholder="Search medicines by name or generic..." style="width:280px;" oninput="filterMedicines()">
+            <button class="btn btn-sm btn-primary" onclick="openAddMedicineModal()">+ Add New Medicine</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Medicine Brand Name</th>
+                <th>Generic Formula</th>
+                <th>Category</th>
+                <th>Available Stock</th>
+                <th>Min Threshold</th>
+                <th>Batch No</th>
+                <th>Expiry Date</th>
+                <th>Rack Location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LOW STOCK & EXPIRY ALERTS -->
+    <div id="tab-alerts" class="tab-content" style="display:none;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+        
+        <!-- LOW STOCK -->
+        <div class="card">
+          <div class="card-header" style="background:#fffbeb;">
+            <h3 style="color:#92400e;"><span>⚠️</span> Low Stock Threshold Warnings</h3>
+          </div>
+          <div class="card-body" id="low-stock-list">
+            <p style="font-size:0.85rem; color:#64748b;">Checking low stock items...</p>
+          </div>
+        </div>
+
+        <!-- EXPIRING SOON -->
+        <div class="card">
+          <div class="card-header" style="background:#fef2f2;">
+            <h3 style="color:#991b1b;"><span>⏳</span> Medicines Expiring Within 60 Days</h3>
+          </div>
+          <div class="card-body" id="expiring-list">
+            <p style="font-size:0.85rem; color:#64748b;">Checking expiry dates...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: DISPENSING HISTORY & AUDIT LOG -->
+    <div id="tab-history" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-header">
+          <h3><span>📜</span> Medicine Issuance & Dispensing Audit Log</h3>
+          <button class="btn btn-sm btn-secondary" onclick="loadDispenseHistory()">🔄 Refresh History</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Dispense ID</th>
+                <th>Rx ID</th>
+                <th>Student / Staff</th>
+                <th>Roll No</th>
+                <th>Medicine Issued</th>
+                <th>Quantity</th>
+                <th>Batch No</th>
+                <th>Dispensed At</th>
+                <th>Dispensed By</th>
+              </tr>
+            </thead>
+            <tbody id="dispense-history-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RESTOCK MODAL -->
+  <div id="restock-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Inward Stock Entry / Restock</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeRestockModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="restock-form" onsubmit="handleRestockSubmit(event)">
+          <input type="hidden" id="restock-med-id">
+          <div class="form-group">
+            <label class="form-label">Medicine</label>
+            <input type="text" id="restock-med-name" class="form-control" readonly>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Additional Quantity to Add</label>
+              <input type="number" id="restock-qty" class="form-control" value="50" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Batch Number</label>
+              <input type="text" id="restock-batch" class="form-control" placeholder="e.g. BAT-2026-11" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Batch Expiry Date</label>
+              <input type="date" id="restock-expiry" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rack / Storage Location</label>
+              <input type="text" id="restock-rack" class="form-control" placeholder="Shelf A-1">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Record Inward Supply & Update Stock</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD MEDICINE MODAL -->
+  <div id="add-med-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Catalog New Medicine in Dispensary</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeAddMedModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-med-form" onsubmit="handleAddMedSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Brand Name *</label>
+              <input type="text" id="new-med-name" class="form-control" placeholder="e.g. Azithromycin 500mg" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Generic Formula *</label>
+              <input type="text" id="new-med-generic" class="form-control" placeholder="e.g. Azithromycin IP" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="new-med-cat" class="form-control">
+                <option value="Tablet">Tablet</option>
+                <option value="Capsule">Capsule</option>
+                <option value="Syrup">Syrup</option>
+                <option value="Ointment">Ointment</option>
+                <option value="Injection">Injection</option>
+                <option value="First-Aid">First-Aid</option>
+                <option value="Drop">Drop</option>
+                <option value="Sachet">Sachet</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Unit Type</label>
+              <input type="text" id="new-med-unit" class="form-control" value="strips (10 tabs)">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Initial Stock Quantity</label>
+              <input type="number" id="new-med-stock" class="form-control" value="100" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min Alert Threshold</label>
+              <input type="number" id="new-med-min" class="form-control" value="20" min="1" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Batch No</label>
+              <input type="text" id="new-med-batch" class="form-control" placeholder="BAT-2026-01" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Date</label>
+              <input type="date" id="new-med-expiry" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rack Location</label>
+              <input type="text" id="new-med-rack" class="form-control" placeholder="Shelf B-1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Standard Dosage Guide</label>
+            <input type="text" id="new-med-guide" class="form-control" placeholder="1 tab OD before meal">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Add Medicine to Inventory</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let allMedicines = [];
+
+    async function initInventoryPortal() {
+      await loadPendingPrescriptions();
+      await loadMedicines();
+      await loadAlerts();
+      await loadDispenseHistory();
+      setInterval(loadPendingPrescriptions, 5000); // 5s live check for incoming doctor prescriptions
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'block';
+      btn.classList.add('active');
+    }
+
+    async function loadPendingPrescriptions() {
+      try {
+        const pending = await apiCall('/api/inventory/pending-prescriptions');
+        document.getElementById('kpi-pending-rx').innerText = pending.length;
+        document.getElementById('badge-pending-count').innerText = pending.length;
+
+        const container = document.getElementById('pending-rx-container');
+        if (pending.length === 0) {
+          container.innerHTML = '<div style="text-align:center; padding:2.5rem; color:#64748b;"><span>✅</span> All incoming doctor prescriptions have been dispensed. No pending orders.</div>';
+          return;
+        }
+
+        container.innerHTML = pending.map(rx => {
+          const itemsRows = (rx.items || []).map(i => `
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px dashed #f1f5f9; font-size:0.85rem;">
+              <div><strong>${i.medicineName}</strong> (${i.dosage})</div>
+              <div>Qty Required: <span style="font-weight:700; color:#8b0000;">${i.quantity}</span></div>
+            </div>
+          `).join('');
+
+          return `
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:1.25rem; margin-bottom:1rem; box-shadow:var(--shadow-sm);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+                <div>
+                  <span class="badge badge-warning">Awaiting Dispensing</span>
+                  <h4 style="font-size:1.15rem; color:#0f172a; margin-top:0.25rem;">${rx.studentName} (${rx.studentRollNo})</h4>
+                  <div style="font-size:0.8rem; color:#64748b;">Rx ID: ${rx.id} · Prescribed by: ${rx.doctorName} · ${rx.date}</div>
+                </div>
+                <button class="btn btn-success" style="font-weight:700;" onclick="dispensePrescription('${rx.id}')">
+                  💊 Dispense & Auto-Deduct Stock
+                </button>
+              </div>
+
+              <div style="background:#f8fafc; border-radius:8px; padding:0.85rem; margin-bottom:0.75rem;">
+                <div style="font-size:0.82rem; color:#334155; margin-bottom:0.4rem;">
+                  <strong>Diagnosis:</strong> ${rx.diagnosis}
+                </div>
+                <div style="margin-top:0.5rem;">
+                  <strong style="font-size:0.82rem; color:#0f172a;">Prescribed Items to Issue:</strong>
+                  ${itemsRows}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function dispensePrescription(rxId) {
+      if (!confirm('Confirm dispensing medicines for prescription ' + rxId + '?\nThis will automatically deduct the quantities from inventory stock.')) {
+        return;
+      }
+      try {
+        const resp = await apiCall('/api/dispensing', 'POST', {
+          prescriptionId: rxId,
+          pharmacistName: 'Mr. Rakesh Verma (B.Pharm)',
+          notes: 'Full course dispensed as prescribed.'
+        });
+        showToast('Medicines dispensed successfully! Stock auto-updated.', 'success');
+        await loadPendingPrescriptions();
+        await loadMedicines();
+        await loadAlerts();
+        await loadDispenseHistory();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function loadMedicines() {
+      try {
+        allMedicines = await apiCall('/api/medicines');
+        document.getElementById('kpi-total-meds').innerText = allMedicines.length;
+        renderMedicinesTable(allMedicines);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderMedicinesTable(meds) {
+      const tbody = document.getElementById('inventory-table-body');
+      tbody.innerHTML = meds.map(m => {
+        let stockClass = 'stock-ok';
+        if (m.stockQuantity === 0) stockClass = 'stock-zero';
+        else if (m.stockQuantity <= m.minThreshold) stockClass = 'stock-low';
+
+        return `
+          <tr>
+            <td><code>${m.id}</code></td>
+            <td><strong>${m.name}</strong></td>
+            <td style="color:#64748b;">${m.genericName}</td>
+            <td><span class="badge">${m.category}</span></td>
+            <td><span class="stock-badge ${stockClass}">${m.stockQuantity} ${m.unit}</span></td>
+            <td>${m.minThreshold}</td>
+            <td><code>${m.batchNo}</code></td>
+            <td>${m.expiryDate}</td>
+            <td><span style="font-size:0.8rem; background:#f1f5f9; padding:0.2rem 0.4rem; border-radius:4px;">${m.rackLocation || '-'}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="openRestockModal('${m.id}', '${m.name}', '${m.batchNo}')">Restock</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterMedicines() {
+      const q = document.getElementById('med-search').value.toLowerCase().trim();
+      const filtered = allMedicines.filter(m => 
+        m.name.toLowerCase().includes(q) || 
+        m.genericName.toLowerCase().includes(q) || 
+        m.category.toLowerCase().includes(q)
+      );
+      renderMedicinesTable(filtered);
+    }
+
+    async function loadAlerts() {
+      try {
+        const alerts = await apiCall('/api/inventory/alerts');
+        document.getElementById('kpi-low-stock').innerText = alerts.lowStockCount;
+        document.getElementById('kpi-expiring-soon').innerText = alerts.expiringSoonCount;
+
+        // Low stock
+        const lowContainer = document.getElementById('low-stock-list');
+        if (alerts.lowStock.length === 0) {
+          lowContainer.innerHTML = '<p style="color:#059669; font-size:0.85rem;">✅ All medicines are comfortably above minimum thresholds.</p>';
+        } else {
+          lowContainer.innerHTML = alerts.lowStock.map(m => `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding:0.5rem 0;">
+              <div>
+                <strong>${m.name}</strong> (${m.category})<br>
+                <span style="font-size:0.75rem; color:#b45309;">Current: ${m.stockQuantity} | Minimum: ${m.minThreshold}</span>
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="openRestockModal('${m.id}', '${m.name}', '${m.batchNo}')">Restock</button>
+            </div>
+          `).join('');
+        }
+
+        // Expiring soon
+        const expContainer = document.getElementById('expiring-list');
+        if (alerts.expiringSoon.length === 0 && alerts.expired.length === 0) {
+          expContainer.innerHTML = '<p style="color:#059669; font-size:0.85rem;">✅ No medicines expiring within 60 days.</p>';
+        } else {
+          expContainer.innerHTML = [
+            ...alerts.expired.map(m => `
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding:0.5rem 0; color:#b91c1c;">
+                <div><strong>${m.name}</strong> [EXPIRED]<br><span style="font-size:0.75rem;">Expired on: ${m.expiryDate} (Batch: ${m.batchNo})</span></div>
+                <span class="badge badge-urgent">EXPIRED</span>
+              </div>
+            `),
+            ...alerts.expiringSoon.map(m => `
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding:0.5rem 0;">
+                <div><strong>${m.name}</strong><br><span style="font-size:0.75rem; color:#b45309;">Expires: ${m.expiryDate} (Batch: ${m.batchNo})</span></div>
+                <span class="badge badge-warning">Expiring Soon</span>
+              </div>
+            `)
+          ].join('');
+        }
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadDispenseHistory() {
+      try {
+        const history = await apiCall('/api/dispensing');
+        const tbody = document.getElementById('dispense-history-body');
+        if (history.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#64748b;">No dispensing transactions logged yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = history.map(d => `
+          <tr>
+            <td><code>${d.id}</code></td>
+            <td><code>${d.prescriptionId}</code></td>
+            <td><strong>${d.studentName}</strong></td>
+            <td>${d.studentRollNo}</td>
+            <td style="color:#8b0000; font-weight:700;">${d.medicineName}</td>
+            <td><strong>${d.quantity}</strong></td>
+            <td><code>${d.batchNo || '-'}</code></td>
+            <td style="font-size:0.8rem; color:#64748b;">${d.dispensedAt}</td>
+            <td style="font-size:0.8rem;">${d.dispensedBy}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function openRestockModal(id, name, batch) {
+      document.getElementById('restock-med-id').value = id;
+      document.getElementById('restock-med-name').value = name;
+      document.getElementById('restock-batch').value = batch;
+      document.getElementById('restock-expiry').value = '2028-06-30';
+      document.getElementById('restock-modal').classList.add('active');
+    }
+
+    function closeRestockModal() {
+      document.getElementById('restock-modal').classList.remove('active');
+    }
+
+    async function handleRestockSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('restock-med-id').value;
+      const qty = parseInt(document.getElementById('restock-qty').value);
+      const batch = document.getElementById('restock-batch').value;
+      const exp = document.getElementById('restock-expiry').value;
+      const rack = document.getElementById('restock-rack').value;
+
+      try {
+        await apiCall('/api/medicines/restock', 'POST', {
+          medicineId: id,
+          quantity: qty,
+          batchNo: batch,
+          expiryDate: exp,
+          rackLocation: rack
+        });
+        showToast('Restocked successfully! Quantity added: +' + qty, 'success');
+        closeRestockModal();
+        await loadMedicines();
+        await loadAlerts();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openAddMedicineModal() {
+      document.getElementById('new-med-expiry').value = '2028-12-31';
+      document.getElementById('add-med-modal').classList.add('active');
+    }
+
+    function closeAddMedModal() {
+      document.getElementById('add-med-modal').classList.remove('active');
+    }
+
+    async function handleAddMedSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('new-med-name').value,
+        genericName: document.getElementById('new-med-generic').value,
+        category: document.getElementById('new-med-cat').value,
+        unit: document.getElementById('new-med-unit').value,
+        stockQuantity: parseInt(document.getElementById('new-med-stock').value),
+        minThreshold: parseInt(document.getElementById('new-med-min').value),
+        batchNo: document.getElementById('new-med-batch').value,
+        expiryDate: document.getElementById('new-med-expiry').value,
+        rackLocation: document.getElementById('new-med-rack').value,
+        dosageGuide: document.getElementById('new-med-guide').value
+      };
+
+      try {
+        await apiCall('/api/medicines', 'POST', payload);
+        showToast('New medicine cataloged in dispensary!', 'success');
+        closeAddMedModal();
+        await loadMedicines();
+        await loadAlerts();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    initInventoryPortal();
+  </script>
+</body>
+</html>

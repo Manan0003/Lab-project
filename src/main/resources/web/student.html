@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Health Portal - Thapar University Dispensary</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .queue-status-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .queue-token-box {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      min-width: 160px;
+    }
+    .queue-token-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fbbf24;
+      line-height: 1;
+    }
+    .medical-history-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+    }
+    .medical-history-card:hover {
+      box-shadow: var(--shadow);
+      border-color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <a href="/index.html" class="brand-container">
+      <div class="brand-logo">TU</div>
+      <div class="brand-text">
+        <h1>Thapar University Dispensary</h1>
+        <p>Student Healthcare & Appointment Portal</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">🏠 Hub</a>
+      <a href="/doctor.html" class="nav-link">🩺 Doctor PC</a>
+      <a href="/inventory.html" class="nav-link">💊 Inventory</a>
+      <div class="user-badge" id="student-badge">
+        <span>🎓</span>
+        <span id="student-name-display">Aarav Patel (102103456)</span>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- STUDENT PROFILE BANNER -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-body" style="padding:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.35rem; color:#0f172a;" id="profile-name">Aarav Patel</h2>
+          <p style="font-size:0.85rem; color:#64748b;" id="profile-dept">Roll No: 102103456 | Computer Science & Engg (CSED) | 3rd Year</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+          <div style="background:#fee2e2; color:#991b1b; padding:0.4rem 0.85rem; border-radius:8px; font-weight:700; font-size:0.85rem;">
+            Blood: <span id="profile-blood">B+</span>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="openStudentSwitcher()">Switch Student Demo</button>
+        </div>
+      </div>
+      <div style="background:#fff1f2; border-top:1px solid #fecaca; padding:0.75rem 1.25rem; font-size:0.82rem; color:#9f1239; display:flex; align-items:center; gap:0.5rem;">
+        <span>⚠️ <strong>Medical Records & Known Allergies:</strong></span>
+        <span id="profile-allergies">Penicillin, Amoxicillin | Chronic: Asthma (Mild)</span>
+      </div>
+    </div>
+
+    <!-- LIVE TOKEN & APPOINTMENT STATUS -->
+    <div class="queue-status-card">
+      <div>
+        <span class="badge" style="background:rgba(251,191,36,0.2); color:#fbbf24; margin-bottom:0.5rem;">Dispensary Live Queue</span>
+        <h3 style="font-size:1.4rem; font-weight:700; margin-bottom:0.25rem;">Consultation Queue Tracker</h3>
+        <p style="font-size:0.85rem; opacity:0.8;" id="queue-desc">Real-time status of your visit and clinic queue</p>
+      </div>
+
+      <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+        <!-- NOW SERVING -->
+        <div class="queue-token-box">
+          <div style="font-size:0.75rem; text-transform:uppercase; opacity:0.8;">Now Serving</div>
+          <div class="queue-token-number" id="now-serving-token">#101</div>
+          <div style="font-size:0.75rem; opacity:0.8;">Chamber 1</div>
+        </div>
+
+        <!-- MY TOKEN -->
+        <div class="queue-token-box" style="border-color:#fbbf24; background:rgba(251,191,36,0.15);">
+          <div style="font-size:0.75rem; text-transform:uppercase; color:#fbbf24;">Your Token</div>
+          <div class="queue-token-number" id="my-token-number">#101</div>
+          <div style="font-size:0.75rem;" id="my-token-status">IN CONSULTATION</div>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn" style="background:#fbbf24; color:#78350f; font-weight:700;" onclick="openTokenModal()">
+          🎫 Book Walk-in Queue Token
+        </button>
+        <button class="btn btn-secondary" style="background:white; margin-left:0.5rem;" onclick="openAppointmentModal()">
+          📅 Book Scheduled Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO COLUMN SECTION -->
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
+
+      <!-- LEFT: PAST PRESCRIPTIONS & MEDICAL RECORDS -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h3><span>📋</span> My Digital Prescriptions & Past Consultations</h3>
+            <button class="btn btn-sm btn-secondary" onclick="loadStudentData()">🔄 Refresh</button>
+          </div>
+          <div class="card-body" id="prescriptions-list">
+            <!-- Dynamic prescription cards loaded here -->
+            <p style="color:#64748b; font-size:0.88rem;">Loading medical history...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: UPCOMING APPOINTMENTS & DOCTORS ON DUTY -->
+      <div>
+        <!-- MY APPOINTMENTS -->
+        <div class="card">
+          <div class="card-header">
+            <h3><span>📅</span> My Appointments</h3>
+          </div>
+          <div class="card-body" id="my-appointments-list" style="padding:1rem;">
+            <p style="color:#64748b; font-size:0.85rem;">Loading appointments...</p>
+          </div>
+        </div>
+
+        <!-- DOCTORS SCHEDULE -->
+        <div class="card">
+          <div class="card-header">
+            <h3><span>🩺</span> Doctors On Duty Today</h3>
+          </div>
+          <div class="card-body" style="padding:1rem;">
+            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem; margin-bottom:0.75rem;">
+              <strong style="color:#0f172a; font-size:0.9rem;">Dr. Ananya Sharma (MD)</strong>
+              <div style="font-size:0.8rem; color:#64748b;">Chief Medical Officer · Chamber 1</div>
+              <div style="font-size:0.78rem; color:#059669; font-weight:600; margin-top:0.2rem;">● Available (09:00 AM - 01:00 PM)</div>
+            </div>
+            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem; margin-bottom:0.75rem;">
+              <strong style="color:#0f172a; font-size:0.9rem;">Dr. Rajesh Verma (MBBS, DNB)</strong>
+              <div style="font-size:0.8rem; color:#64748b;">Senior Resident Physician · Chamber 2</div>
+              <div style="font-size:0.78rem; color:#059669; font-weight:600; margin-top:0.2rem;">● Available (10:00 AM - 02:00 PM)</div>
+            </div>
+            <div>
+              <strong style="color:#0f172a; font-size:0.9rem;">Dr. Harpreet Kaur (MBBS, DGO)</strong>
+              <div style="font-size:0.8rem; color:#64748b;">Consultant Physician · Chamber 3</div>
+              <div style="font-size:0.78rem; color:#059669; font-weight:600; margin-top:0.2rem;">● Available (08:30 AM - 12:30 PM)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SICK LEAVE NOTICE -->
+        <div class="card" style="background:#f0fdf4; border-color:#bbf7d0;">
+          <div class="card-body" style="padding:1rem;">
+            <h4 style="font-size:0.9rem; color:#166534; margin-bottom:0.25rem;">📄 University Sick Leave Slips</h4>
+            <p style="font-size:0.8rem; color:#15803d; line-height:1.4;">
+              Digital medical slips issued by the attending medical officer can be printed and submitted directly to your Department HOD or Hostel Warden for official leave authorization.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- BOOK TOKEN MODAL -->
+  <div id="token-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Join Dispensary Walk-in Queue</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeTokenModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="token-form" onsubmit="handleGenerateToken(event)">
+          <div class="form-group">
+            <label class="form-label">Symptoms / Reason for Consultation</label>
+            <textarea id="token-symptoms" class="form-control" rows="3" placeholder="Describe symptoms (e.g. fever, headache, sprained wrist, stomach pain...)" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority Level</label>
+            <select id="token-priority" class="form-control">
+              <option value="NORMAL">Normal Consultation</option>
+              <option value="URGENT">Urgent (High fever, acute pain, bleeding)</option>
+              <option value="EMERGENCY">Emergency (Breathing difficulty, trauma)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Generate Live Token</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOK APPOINTMENT MODAL -->
+  <div id="appointment-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Book Scheduled Doctor Appointment</h3>
+        <button class="btn btn-sm btn-secondary" onclick="closeAppointmentModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="appointment-form" onsubmit="handleBookAppointment(event)">
+          <div class="form-group">
+            <label class="form-label">Select Medical Officer</label>
+            <select id="apt-doctor" class="form-control" required>
+              <option value="DOC-001">Dr. Ananya Sharma (MD Medicine - Chamber 1)</option>
+              <option value="DOC-002">Dr. Rajesh Verma (MBBS, DNB - Chamber 2)</option>
+              <option value="DOC-003">Dr. Harpreet Kaur (MBBS, DGO - Chamber 3)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Appointment Date</label>
+              <input type="date" id="apt-date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Slot</label>
+              <select id="apt-timeslot" class="form-control" required>
+                <option value="09:30 AM - 10:00 AM">09:30 AM - 10:00 AM</option>
+                <option value="10:00 AM - 10:30 AM">10:00 AM - 10:30 AM</option>
+                <option value="10:30 AM - 11:00 AM">10:30 AM - 11:00 AM</option>
+                <option value="11:00 AM - 11:30 AM">11:00 AM - 11:30 AM</option>
+                <option value="03:30 PM - 04:00 PM">03:30 PM - 04:00 PM</option>
+                <option value="04:00 PM - 04:30 PM">04:00 PM - 04:30 PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reason / Symptoms</label>
+            <input type="text" id="apt-symptoms" class="form-control" placeholder="e.g. Follow-up consultation, allergic symptoms" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Confirm Appointment Booking</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let currentRollNo = '102103456';
+
+    async function initStudentPortal() {
+      const user = getCurrentUser();
+      if (user && user.role === 'STUDENT') {
+        currentRollNo = user.username;
+      }
+      document.getElementById('apt-date').value = new Date().toISOString().substring(0, 10);
+      await loadStudentData();
+      await updateQueueStatus();
+      setInterval(updateQueueStatus, 5000); // Live poll queue every 5 seconds
+    }
+
+    async function loadStudentData() {
+      try {
+        const student = await apiCall('/api/patients/' + currentRollNo);
+        const data = student.student || student;
+
+        document.getElementById('profile-name').innerText = data.name;
+        document.getElementById('student-name-display').innerText = `${data.name} (${data.rollNo})`;
+        document.getElementById('profile-dept').innerText = `Roll No: ${data.rollNo} | ${data.department} | ${data.year}`;
+        document.getElementById('profile-blood').innerText = data.bloodGroup || 'O+';
+        document.getElementById('profile-allergies').innerText = `${data.allergies || 'None'} | Chronic: ${data.chronicConditions || 'None'}`;
+
+        // Render past prescriptions
+        const pastList = student.pastPrescriptions || [];
+        const container = document.getElementById('prescriptions-list');
+
+        if (pastList.length === 0) {
+          container.innerHTML = '<p style="color:#64748b; font-size:0.88rem; padding:1rem;">No prior dispensary consultations found on record.</p>';
+        } else {
+          container.innerHTML = pastList.map(p => {
+            const medNames = (p.items || []).map(i => `${i.medicineName} (${i.dosage})`).join(', ') || 'No medicines';
+            const sickBadge = p.sickLeaveIssued ? `<span class="badge badge-warning">🏥 ${p.sickLeaveDays} Days Sick Leave</span>` : '';
+            return `
+              <div class="medical-history-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
+                  <div>
+                    <strong style="color:#8b0000; font-size:1rem;">${p.diagnosis || 'Clinical Consultation'}</strong>
+                    <div style="font-size:0.8rem; color:#64748b;">${p.date} · Attending: ${p.doctorName}</div>
+                  </div>
+                  <div style="display:flex; gap:0.5rem; align-items:center;">
+                    ${sickBadge}
+                    ${getStatusBadge(p.status)}
+                  </div>
+                </div>
+                <div style="font-size:0.85rem; color:#334155; margin-bottom:0.5rem;">
+                  <strong>Complaints:</strong> ${p.symptoms || '-'}<br>
+                  <strong>Medicines:</strong> ${medNames}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:0.5rem;">
+                  <span style="font-size:0.78rem; color:#64748b;">Rx ID: ${p.id}</span>
+                  <button class="btn btn-sm btn-secondary" onclick='showPrescriptionSlip(${JSON.stringify(p)})'>
+                    📄 View & Print Official Slip
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Render student appointments
+        const apts = await apiCall('/api/appointments?rollNo=' + currentRollNo);
+        const aptContainer = document.getElementById('my-appointments-list');
+        if (apts.length === 0) {
+          aptContainer.innerHTML = '<p style="color:#64748b; font-size:0.82rem;">No upcoming appointments.</p>';
+        } else {
+          aptContainer.innerHTML = apts.map(a => `
+            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:0.6rem; margin-bottom:0.6rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:0.85rem; color:#0f172a;">${a.doctorName}</strong>
+                ${getStatusBadge(a.status)}
+              </div>
+              <div style="font-size:0.8rem; color:#64748b;">📅 ${a.appointmentDate} (${a.timeSlot})</div>
+              <div style="font-size:0.75rem; color:#475569;">Token: #${a.tokenNumber} · ${a.symptoms}</div>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updateQueueStatus() {
+      try {
+        const q = await apiCall('/api/tokens/queue');
+        if (q.currentConsultation) {
+          document.getElementById('now-serving-token').innerText = '#' + q.currentConsultation.tokenNumber;
+        } else {
+          document.getElementById('now-serving-token').innerText = 'None';
+        }
+
+        const myToken = await apiCall('/api/tokens/student?rollNo=' + currentRollNo);
+        if (myToken) {
+          document.getElementById('my-token-number').innerText = '#' + myToken.tokenNumber;
+          document.getElementById('my-token-status').innerText = myToken.status;
+          document.getElementById('queue-desc').innerText = `Active Token #${myToken.tokenNumber} · Status: ${myToken.status} · Priority: ${myToken.priority}`;
+        } else {
+          document.getElementById('my-token-number').innerText = '--';
+          document.getElementById('my-token-status').innerText = 'NO TOKEN';
+          document.getElementById('queue-desc').innerText = `Clinic Open · ${q.totalWaiting} patients currently waiting (~${q.estimatedWaitMins} mins wait)`;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    function openTokenModal() {
+      document.getElementById('token-modal').classList.add('active');
+    }
+    function closeTokenModal() {
+      document.getElementById('token-modal').classList.remove('active');
+    }
+
+    function openAppointmentModal() {
+      document.getElementById('appointment-modal').classList.add('active');
+    }
+    function closeAppointmentModal() {
+      document.getElementById('appointment-modal').classList.remove('active');
+    }
+
+    async function handleGenerateToken(e) {
+      e.preventDefault();
+      const symptoms = document.getElementById('token-symptoms').value;
+      const priority = document.getElementById('token-priority').value;
+
+      try {
+        const resp = await apiCall('/api/tokens', 'POST', {
+          studentRollNo: currentRollNo,
+          symptoms: symptoms,
+          priority: priority
+        });
+        showToast('Token #' + resp.data.tokenNumber + ' generated successfully!', 'success');
+        closeTokenModal();
+        await updateQueueStatus();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleBookAppointment(e) {
+      e.preventDefault();
+      const doc = document.getElementById('apt-doctor').value;
+      const date = document.getElementById('apt-date').value;
+      const slot = document.getElementById('apt-timeslot').value;
+      const sym = document.getElementById('apt-symptoms').value;
+
+      try {
+        const resp = await apiCall('/api/appointments', 'POST', {
+          patientRollNo: currentRollNo,
+          doctorId: doc,
+          appointmentDate: date,
+          timeSlot: slot,
+          symptoms: sym,
+          priority: 'NORMAL'
+        });
+        showToast('Appointment booked! Token #' + resp.data.tokenNumber + ' allocated.', 'success');
+        closeAppointmentModal();
+        await loadStudentData();
+        await updateQueueStatus();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openStudentSwitcher() {
+      const target = prompt('Enter Student Roll No to switch demo (e.g. 102103456, 102204123, 102008765, 102301987):', currentRollNo);
+      if (target) {
+        currentRollNo = target.trim();
+        loadStudentData();
+        updateQueueStatus();
+        showToast('Switched to Student: ' + currentRollNo, 'info');
+      }
+    }
+
+    initStudentPortal();
+  </script>
+</body>
+</html>
