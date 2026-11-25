@@ -364,9 +364,11 @@
 
     async function initStudentPortal() {
       const user = getCurrentUser();
-      if (user && user.role === 'STUDENT') {
-        currentRollNo = user.username;
+      if (!user || user.role !== 'STUDENT') {
+        window.location.href = '/login.html?portal=student';
+        return;
       }
+      currentRollNo = user.username;
       document.getElementById('apt-date').value = new Date().toISOString().substring(0, 10);
       await loadStudentData();
       await updateQueueStatus();
@@ -376,16 +378,16 @@
     async function loadStudentData() {
       try {
         const student = await apiCall('/api/patients/' + currentRollNo);
-        const data = student.student || student;
+        const data = (student && student.student) ? student.student : (student || {});
 
-        document.getElementById('profile-name').innerText = data.name;
-        document.getElementById('student-name-display').innerText = `${data.name} (${data.rollNo})`;
-        document.getElementById('profile-dept').innerText = `Roll No: ${data.rollNo} | ${data.department} | ${data.year}`;
+        document.getElementById('profile-name').innerText = data.name || 'Student';
+        document.getElementById('student-name-display').innerText = `${data.name || 'Student'} (${data.rollNo || currentRollNo})`;
+        document.getElementById('profile-dept').innerText = `Roll No: ${data.rollNo || currentRollNo} | ${data.department || 'Thapar University'} | ${data.year || '1st Year'}`;
         document.getElementById('profile-blood').innerText = data.bloodGroup || 'O+';
         document.getElementById('profile-allergies').innerText = `${data.allergies || 'None'} | Chronic: ${data.chronicConditions || 'None'}`;
 
         // Render past prescriptions
-        const pastList = student.pastPrescriptions || [];
+        const pastList = (student && student.pastPrescriptions) ? student.pastPrescriptions : [];
         const container = document.getElementById('prescriptions-list');
 
         if (pastList.length === 0) {

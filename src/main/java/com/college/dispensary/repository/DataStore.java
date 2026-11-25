@@ -132,22 +132,19 @@ public class DataStore {
     }
 
     public void loadOrSeedData() {
-        File tokensFile = new File(AppConfig.DATA_DIR, "tokens.json");
-        // Check if existing data has at least 10 tokens; if not, re-seed full data
-        if (tokensFile.exists() && tokensFile.length() > 50) {
+        File usersFile = new File(AppConfig.DATA_DIR, "users.json");
+        if (usersFile.exists() && usersFile.length() > 10) {
             try {
                 loadFromDisk();
-                if (tokens.size() >= 10) {
-                    System.out.println("Thapar Dispensary DataStore loaded from disk (" + tokens.size() + " tokens).");
-                    return;
-                }
+                System.out.println("Thapar Dispensary DataStore loaded from disk.");
+                return;
             } catch (Exception e) {
                 System.err.println("Could not load existing data, re-seeding defaults: " + e.getMessage());
             }
         }
         seedInitialData();
         saveToDisk();
-        System.out.println("Thapar Dispensary DataStore initialized with 12+ tokens and rich seed data.");
+        System.out.println("Thapar Dispensary DataStore initialized clean. Ready for student roll numbers and registrations.");
     }
 
     private void loadFromDisk() throws IOException {
@@ -444,116 +441,38 @@ public class DataStore {
         String nowStr = LocalDateTime.now().format(ISO_FMT);
         String todayDate = LocalDate.now().toString();
 
-        // 1. Users (5 Roles)
+        // 1. Core Staff Users (Admin, Doctor, Receptionist, Pharmacist)
         users.put("admin", new User("U-001", "admin", "admin123", "Dr. Vikramjit Singh (Admin)", "ADMIN", "admin.dispensary@thapar.edu", nowStr));
         users.put("doctor", new User("U-002", "doctor", "doctor123", "Dr. Ananya Sharma (MD)", "DOCTOR", "dr.ananya@thapar.edu", nowStr));
         users.put("reception", new User("U-003", "reception", "reception123", "Mr. Gurpreet Singh (Reception)", "RECEPTIONIST", "reception.health@thapar.edu", nowStr));
         users.put("pharma", new User("U-004", "pharma", "pharma123", "Mr. Rakesh Verma (B.Pharm)", "PHARMACIST", "pharmacy.dispensary@thapar.edu", nowStr));
 
-        // 2. Doctors
+        // 2. On-Duty Doctors in Chambers
         doctors.put("DOC-001", new Doctor("DOC-001", "Dr. Ananya Sharma", "Chief Medical Officer / Internal Medicine", "MBBS, MD (Medicine)", "Chamber 1", "+91 98765 11001", "dr.ananya@thapar.edu", "Mon - Sat", "09:00 AM - 01:00 PM, 03:00 PM - 06:00 PM", "AVAILABLE"));
         doctors.put("DOC-002", new Doctor("DOC-002", "Dr. Rajesh Verma", "Senior Resident Physician", "MBBS, DNB (Family Medicine)", "Chamber 2", "+91 98765 11002", "dr.rajesh@thapar.edu", "Mon - Fri", "10:00 AM - 02:00 PM, 04:00 PM - 07:00 PM", "AVAILABLE"));
         doctors.put("DOC-003", new Doctor("DOC-003", "Dr. Harpreet Kaur", "Consultant Physician & Women's Health", "MBBS, DGO", "Chamber 3", "+91 98765 11003", "dr.harpreet@thapar.edu", "Mon - Sat", "08:30 AM - 12:30 PM", "AVAILABLE"));
 
-        // 3. Students / Patients (12 registered students across departments)
-        registerStudent("102103456", "Aarav Patel", "Computer Science & Engg (CSED)", "3rd Year", "Male", 20, "B+", "Penicillin, Amoxicillin", "Asthma (Mild)", "Suresh Patel (Father)", "+91 98221 11223", "+91 99887 76655");
-        registerStudent("102204123", "Priya Nair", "Electronics & Comm (ECED)", "2nd Year", "Female", 19, "O+", "Sulfa Drugs", "None", "Radha Nair (Mother)", "+91 98440 22334", "+91 91234 56789");
-        registerStudent("102008765", "Rohan Gupta", "Mechanical Engg (MED)", "4th Year", "Male", 21, "A+", "None", "Allergic Rhinitis", "Deepak Gupta (Brother)", "+91 97110 33445", "+91 98765 12345");
-        registerStudent("102301987", "Sneha Rao", "Chemical Engg (CHED)", "1st Year", "Female", 18, "AB+", "Aspirin, NSAIDs", "None", "Venkatesh Rao (Father)", "+91 96550 44556", "+91 99441 22334");
-        registerStudent("102105678", "Karan Sharma", "Computer Science (CSED)", "3rd Year", "Male", 20, "O+", "None", "None", "Rajesh Sharma (Father)", "+91 98111 22334", "+91 97112 33445");
-        registerStudent("102208912", "Ananya Verma", "Electronics & Comm (ECED)", "2nd Year", "Female", 19, "B+", "Dust, Pollen", "None", "Sunil Verma (Father)", "+91 98333 44556", "+91 91223 44556");
-        registerStudent("102003411", "Vikram Malhotra", "Civil Engg (CED)", "4th Year", "Male", 21, "A-", "None", "None", "Kamal Malhotra (Father)", "+91 98444 55667", "+91 98777 66554");
-        registerStudent("102307843", "Simranjit Kaur", "Biotechnology", "1st Year", "Female", 18, "O-", "Sulfa Drugs", "None", "Gurdev Singh (Father)", "+91 98555 66778", "+91 99888 77665");
-        registerStudent("102109823", "Jaspreet Singh", "Mechanical Engg (MED)", "3rd Year", "Male", 20, "B-", "None", "None", "Balwinder Singh (Father)", "+91 98666 77889", "+91 97665 44332");
-        registerStudent("102201944", "Mehak Preet", "Chemical Engg (CHED)", "2nd Year", "Female", 19, "AB-", "Aspirin", "Migraine", "Sukhdev Singh (Father)", "+91 98777 88990", "+91 98123 45678");
-        registerStudent("102004599", "Rahul Singla", "Computer Science (CSED)", "4th Year", "Male", 21, "A+", "None", "None", "Pawan Singla (Father)", "+91 98888 99001", "+91 99112 23344");
-        registerStudent("102306711", "Divya Jindal", "Electronics & Comm (ECED)", "1st Year", "Female", 18, "O+", "None", "None", "Anil Jindal (Father)", "+91 98999 00112", "+91 98776 54321");
+        // 3. Students / Patients - Clean slate: users register their own roll numbers & passwords
+        tokenCounter.set(100);
+        appointmentCounter.set(1000);
+        prescriptionCounter.set(1000);
+        dispenseCounter.set(5000);
 
-        // 4. TOKENS - SEED AT LEAST 12 TOKENS FOR 10+ VISIBLE QUEUE BOARD
-        // T-101: In consultation
-        Token t101 = createSeedToken("T-101", 101, "102103456", "Aarav Patel", "CSED", "High fever (101°F), severe body ache, shivering", "URGENT", "IN_CONSULTATION", "WALK_IN", "09:30 AM - 09:45 AM", "Dr. Ananya Sharma", "Mr. Gurpreet Singh (Reception)");
-        t101.setCalledAt(nowStr);
-
-        // T-102 to T-106: WAITING (Checked In by Admin/Reception)
-        createSeedToken("T-102", 102, "102204123", "Priya Nair", "ECED", "Throat irritation, dry cough and mild headache", "NORMAL", "WAITING", "WALK_IN", "09:45 AM - 10:00 AM", null, "Mr. Gurpreet Singh (Reception)");
-        createSeedToken("T-103", 103, "102008765", "Rohan Gupta", "MED", "Sprained left ankle during basketball practice, acute swelling", "URGENT", "WAITING", "WALK_IN", "10:00 AM - 10:15 AM", null, "Dr. Vikramjit Singh (Admin)");
-        createSeedToken("T-104", 104, "102301987", "Sneha Rao", "CHED", "Stomach ache, acid reflux and nausea after hostel dinner", "NORMAL", "WAITING", "WALK_IN", "10:15 AM - 10:30 AM", null, "Mr. Gurpreet Singh (Reception)");
-        createSeedToken("T-105", 105, "102105678", "Karan Sharma", "CSED", "Allergic rash on arms, persistent itching", "NORMAL", "WAITING", "WALK_IN", "10:30 AM - 10:45 AM", null, "Front-Desk Staff");
-        createSeedToken("T-106", 106, "102208912", "Ananya Verma", "ECED", "Eye redness, burning sensation and watery discharge", "NORMAL", "WAITING", "WALK_IN", "10:45 AM - 11:00 AM", null, "Front-Desk Staff");
-
-        // T-107 to T-112: AWAITING_ARRIVAL (Booked online, awaiting physical arrival confirmation by admin)
-        createSeedToken("T-107", 107, "102003411", "Vikram Malhotra", "CED", "Mild fever and lower back stiffness", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "11:00 AM - 11:15 AM", null, null);
-        createSeedToken("T-108", 108, "102307843", "Simranjit Kaur", "Biotech", "Cut on right index finger while working in laboratory", "URGENT", "AWAITING_ARRIVAL", "WALK_IN", "11:15 AM - 11:30 AM", null, null);
-        createSeedToken("T-109", 109, "102109823", "Jaspreet Singh", "MED", "Follow-up consultation for seasonal asthma", "NORMAL", "AWAITING_ARRIVAL", "SCHEDULED", "11:30 AM - 11:45 AM", null, null);
-        createSeedToken("T-110", 110, "102201944", "Mehak Preet", "CHED", "Throbbing migraine headache and light sensitivity", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "11:45 AM - 12:00 PM", null, null);
-        createSeedToken("T-111", 111, "102004599", "Rahul Singla", "CSED", "Severe cold, nasal blockage and sinus pressure", "NORMAL", "AWAITING_ARRIVAL", "SCHEDULED", "12:00 PM - 12:15 PM", null, null);
-        createSeedToken("T-112", 112, "102306711", "Divya Jindal", "ECED", "Blister burn on palm from hostel kettle steam", "NORMAL", "AWAITING_ARRIVAL", "WALK_IN", "12:15 PM - 12:30 PM", null, null);
-
-        tokenCounter.set(112);
-
-        // 5. Appointments
-        Appointment apt1 = new Appointment("APT-1001", 101, "102103456", "Aarav Patel", "CSED", "DOC-001", "Dr. Ananya Sharma", todayDate, "09:30 AM - 10:00 AM", "High fever (101°F), severe body ache, shivering", "URGENT", "Confirmed", nowStr);
-        apt1.setTokenId("T-101");
-        apt1.setConfirmedAt(nowStr);
-        apt1.setConfirmedBy("Mr. Gurpreet Singh (Reception)");
-
-        Appointment apt2 = new Appointment("APT-1002", 109, "102109823", "Jaspreet Singh", "MED", "DOC-001", "Dr. Ananya Sharma", todayDate, "11:30 AM - 12:00 PM", "Follow-up consultation for seasonal asthma", "NORMAL", "Pending", nowStr);
-        apt2.setTokenId("T-109");
-
-        Appointment apt3 = new Appointment("APT-1003", 111, "102004599", "Rahul Singla", "CSED", "DOC-002", "Dr. Rajesh Verma", todayDate, "12:00 PM - 12:30 PM", "Severe cold, nasal blockage and sinus pressure", "NORMAL", "Pending", nowStr);
-        apt3.setTokenId("T-111");
-
-        appointments.put(apt1.getId(), apt1);
-        appointments.put(apt2.getId(), apt2);
-        appointments.put(apt3.getId(), apt3);
-        appointmentCounter.set(1003);
-
-        // 6. Medicines Inventory
+        // 4. Medicines Inventory (Dispensary pharmacy catalogue with fresh stock)
         addMedicine("MED-001", "Paracetamol 500mg", "Acetaminophen", "Tablet", 200, 30, "strips (10 tabs)", "2027-08-30", "BAT-PAR-25", "Shelf A-1", "1 tab TDS after meals");
-        addMedicine("MED-002", "Amoxicillin 500mg", "Amoxicillin Trihydrate", "Capsule", 18, 25, "strips (10 caps)", "2026-12-15", "BAT-AMX-24", "Shelf B-2", "1 cap TDS for 5 days");
-        addMedicine("MED-003", "Cetirizine 10mg", "Cetirizine HCl", "Tablet", 85, 20, "strips (10 tabs)", "2027-05-20", "BAT-CET-25", "Shelf A-3", "1 tab OD at night");
-        addMedicine("MED-004", "Ibuprofen 400mg", "Ibuprofen", "Tablet", 60, 20, "strips (10 tabs)", "2027-10-10", "BAT-IBU-25", "Shelf A-2", "1 tab BD after food");
-        addMedicine("MED-005", "ORS Hydration Powder", "Oral Rehydration Salts IP", "Sachet", 95, 30, "sachets", "2028-01-01", "BAT-ORS-26", "Shelf C-1", "Mix in 1L clean drinking water");
-        addMedicine("MED-006", "Azithromycin 500mg", "Azithromycin", "Tablet", 8, 20, "strips (3 tabs)", "2027-03-15", "BAT-AZI-25", "Shelf B-1", "1 tab OD 1 hr before meal");
-        addMedicine("MED-007", "Dextromethorphan Cough Syrup", "Dextromethorphan HBr", "Syrup", 35, 15, "bottles (100ml)", "2027-04-10", "BAT-CSY-25", "Shelf C-2", "10ml TDS");
-        addMedicine("MED-008", "Betadine 5% Antiseptic Ointment", "Povidone-Iodine", "Ointment", 22, 10, "tubes (20g)", "2027-11-25", "BAT-BET-25", "Shelf D-1", "Apply locally BD");
-        addMedicine("MED-009", "Pantoprazole 40mg", "Pantoprazole Sodium", "Tablet", 70, 25, "strips (10 tabs)", "2027-09-18", "BAT-PAN-25", "Shelf A-4", "1 tab OD empty stomach in morning");
+        addMedicine("MED-002", "Amoxicillin 500mg", "Amoxicillin Trihydrate", "Capsule", 50, 25, "strips (10 caps)", "2026-12-15", "BAT-AMX-24", "Shelf B-2", "1 cap TDS for 5 days");
+        addMedicine("MED-003", "Cetirizine 10mg", "Cetirizine HCl", "Tablet", 100, 20, "strips (10 tabs)", "2027-05-20", "BAT-CET-25", "Shelf A-3", "1 tab OD at night");
+        addMedicine("MED-004", "Ibuprofen 400mg", "Ibuprofen", "Tablet", 80, 20, "strips (10 tabs)", "2027-10-10", "BAT-IBU-25", "Shelf A-2", "1 tab BD after food");
+        addMedicine("MED-005", "ORS Hydration Powder", "Oral Rehydration Salts IP", "Sachet", 100, 30, "sachets", "2028-01-01", "BAT-ORS-26", "Shelf C-1", "Mix in 1L clean drinking water");
+        addMedicine("MED-006", "Azithromycin 500mg", "Azithromycin", "Tablet", 40, 20, "strips (3 tabs)", "2027-03-15", "BAT-AZI-25", "Shelf B-1", "1 tab OD 1 hr before meal");
+        addMedicine("MED-007", "Dextromethorphan Cough Syrup", "Dextromethorphan HBr", "Syrup", 40, 15, "bottles (100ml)", "2027-04-10", "BAT-CSY-25", "Shelf C-2", "10ml TDS");
+        addMedicine("MED-008", "Betadine 5% Antiseptic Ointment", "Povidone-Iodine", "Ointment", 30, 10, "tubes (20g)", "2027-11-25", "BAT-BET-25", "Shelf D-1", "Apply locally BD");
+        addMedicine("MED-009", "Pantoprazole 40mg", "Pantoprazole Sodium", "Tablet", 80, 25, "strips (10 tabs)", "2027-09-18", "BAT-PAN-25", "Shelf A-4", "1 tab OD empty stomach in morning");
         addMedicine("MED-010", "Sterile Crepe Bandage 10cm", "Cotton Crepe Bandage", "First-Aid", 40, 15, "rolls", "2029-12-31", "BAT-BN-25", "Drawer F-1", "Wrap firmly over sprains");
-        addMedicine("MED-011", "Tetanus Toxoid 0.5ml", "TT Vaccine", "Injection", 12, 10, "vials", "2027-02-28", "BAT-TT-24", "Refrigerator R-1", "0.5ml IM single dose");
-        addMedicine("MED-012", "Ciprofloxacin Eye/Ear Drops", "Ciprofloxacin 0.3%", "Drop", 14, 10, "bottles (5ml)", "2026-11-30", "BAT-CIP-24", "Shelf D-2", "2 drops in affected eye TDS");
+        addMedicine("MED-011", "Tetanus Toxoid 0.5ml", "TT Vaccine", "Injection", 20, 10, "vials", "2027-02-28", "BAT-TT-24", "Refrigerator R-1", "0.5ml IM single dose");
+        addMedicine("MED-012", "Ciprofloxacin Eye/Ear Drops", "Ciprofloxacin 0.3%", "Drop", 25, 10, "bottles (5ml)", "2026-11-30", "BAT-CIP-24", "Shelf D-2", "2 drops in affected eye TDS");
 
-        // 7. Prescriptions History
-        Prescription p1 = new Prescription();
-        p1.setId("RX-2026-1001");
-        p1.setTokenId("T-098");
-        p1.setStudentRollNo("102103456");
-        p1.setStudentName("Aarav Patel");
-        p1.setDoctorName("Dr. Ananya Sharma");
-        p1.setDate("2026-11-12 10:30");
-        p1.setBloodPressure("118/78 mmHg");
-        p1.setTemperature("98.4 °F");
-        p1.setPulse("74 bpm");
-        p1.setWeight("66 kg");
-        p1.setSymptoms("Seasonal allergic sneezing, mild wheezing");
-        p1.setDiagnosis("Allergic Rhinitis with mild bronchospasm");
-        p1.setClinicalNotes("Student has history of mild asthma. Avoid cold beverages. Caution: Allergic to Penicillin.");
-        p1.setStatus("DISPENSED");
-        p1.setDispensedAt("2026-11-12 10:45");
-        p1.setDispensedBy("Mr. Rakesh Verma (B.Pharm)");
-        p1.setSickLeaveIssued(false);
-
-        List<PrescribedItem> p1Items = new ArrayList<>();
-        p1Items.add(new PrescribedItem("MED-003", "Cetirizine 10mg", "1-0-0 (Night)", "5 Days", 5, "Take with lukewarm water", true));
-        p1Items.add(new PrescribedItem("MED-009", "Pantoprazole 40mg", "1-0-0 (Morning)", "5 Days", 5, "Take empty stomach before breakfast", true));
-        p1.setItems(p1Items);
-        prescriptions.put(p1.getId(), p1);
-
-        dispenseRecords.add(new DispenseRecord("DISP-5001", "RX-2026-1001", "102103456", "Aarav Patel", "MED-003", "Cetirizine 10mg", 5, "BAT-CET-25", "2026-11-12 10:45", "Mr. Rakesh Verma", "Issued 5 tablets"));
-        dispenseRecords.add(new DispenseRecord("DISP-5002", "RX-2026-1001", "102103456", "Aarav Patel", "MED-009", "Pantoprazole 40mg", 5, "BAT-PAN-25", "2026-11-12 10:45", "Mr. Rakesh Verma", "Advised empty stomach"));
-
-        logActivity("SYSTEM", "SYSTEM", "SYSTEM_INIT", "Thapar University Health & Dispensary Management System initialized with 12 active queue tokens.");
-        logActivity("admin", "ADMIN", "ARRIVAL_CONFIRMED", "Confirmed physical arrival for Token #103 (Rohan Gupta). Admitted to queue.");
-        logActivity("doctor", "DOCTOR", "CONSULTATION_CALLED", "Called Token #101 (Aarav Patel) into Chamber 1.");
+        logActivity("SYSTEM", "SYSTEM", "SYSTEM_INIT", "Thapar University Health & Dispensary Management System initialized fresh. Ready for registrations and consultations.");
     }
 
     private void registerStudent(String rollNo, String name, String dept, String year, String gender, int age,

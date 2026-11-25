@@ -299,6 +299,15 @@
     let prescriptionItems = [];
 
     async function initDoctorPortal() {
+      const user = getCurrentUser();
+      if (!user || (user.role !== 'DOCTOR' && user.role !== 'ADMIN')) {
+        window.location.href = '/login.html?portal=doctor';
+        return;
+      }
+      if (user && document.getElementById('doc-badge-name')) {
+        document.getElementById('doc-badge-name').innerText = `${user.fullName} (${user.role})`;
+      }
+
       const today = new Date().toISOString().substring(0, 10);
       document.getElementById('sick-from').value = today;
       const tomorrow = new Date();
